@@ -1,0 +1,94 @@
+<div class="page-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.abierto]="menuAbierto">
+    <div class="logo-container">
+      <button class="menu-icon" (click)="toggleMenu()">☰</button>
+      <h3>MENU</h3>
+    </div>
+    <nav>
+      <button class="nav-btn" (click)="Database()">
+        <span class="text">DATABASE</span>
+      </button>
+      <button class="nav-btn" (click)="Formulario()">
+        <span class="text">FORMULARIO</span>
+      </button>
+      <div class="submenu">
+        <button class="submenu-item" (click)="FormularioVersiones()">
+          <span>FORMULARIO</span>
+        </button>
+        <button class="submenu-item" (click)="Version()">
+          <span>VERSIONES</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <div class="form-container">
+      <h2 class="form-title">Formulario de Versiones</h2>
+
+      <form [formGroup]="miFormulario" (ngSubmit)="onSubmit()">
+        <!-- Paciente -->
+        <div class="form-group">
+          <label>Paciente</label>
+          <select formControlName="pacienteId" [class.input-error]="pacienteInvalido">
+            <option value="">Seleccionar paciente</option>
+            <option *ngFor="let paciente of pacientesDisponibles" [value]="paciente.id">
+              {{ paciente.nombre }}
+            </option>
+          </select>
+          <span class="error-msg" *ngIf="pacienteInvalido">
+            Debes seleccionar un paciente
+          </span>
+        </div>
+
+        <!-- Número de versión -->
+        <div class="form-group">
+          <label>Número de versión</label>
+          <input type="text" formControlName="numeroVersion" placeholder="v1.0.0" [class.input-error]="numeroVersionInvalido">
+          <span class="error-msg" *ngIf="numeroVersionInvalido">
+            El número de versión es obligatorio
+          </span>
+        </div>
+
+        <!-- Fecha -->
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" formControlName="fecha" [class.input-error]="fechaInvalido">
+          <span class="error-msg" *ngIf="fechaInvalido">
+            La fecha es obligatoria
+          </span>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" formControlName="telefono" placeholder="+34 123 456 789" [class.input-error]="telefonoInvalido">
+          <span class="error-msg" *ngIf="telefonoInvalido">
+            El teléfono es obligatorio
+          </span>
+        </div>
+
+        <!-- Consentimiento -->
+        <div class="form-group checkbox-wrapper">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="consentimiento" class="checkbox-input">
+            <span class="checkbox-text">Acepto el consentimiento informado</span>
+          </label>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="button-group">
+          <button type="submit" class="btn guardar" [disabled]="miFormulario.invalid">GUARDAR</button>
+          <button type="button" (click)="eliminar()" class="btn eliminar">ELIMINAR</button>
+        </div>
+
+        <!-- Botón volver -->
+        <div class="button-group-left">
+          <button type="button" (click)="volver()" class="btn volver">← VOLVER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

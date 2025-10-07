@@ -1,0 +1,128 @@
+<div class="admin-layout">
+  <!-- Sidebar desplegable -->
+  <aside class="sidebar" [class.abierto]="menuAbierto">
+    <div class="logo-container">
+      <button class="menu-icon" (click)="toggleMenu()">☰</button>
+      <h3>MENU</h3>
+    </div>
+
+    <nav>
+      <button class="nav-btn" (click)="Database()">
+        <span class="text">DATABASE</span>
+      </button>
+      <button class="nav-btn" (click)="Formulario()">
+        <span class="text">FORMULARIO</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <!-- Topbar -->
+    <header class="topbar">
+      <h1 class="project-title">PRUEBA</h1>
+
+      <!-- Usuario arriba a la derecha -->
+      <div class="user-menu-top">
+        <button class="user-icon" (click)="toggleUserMenu()">
+          <img src="" alt="PERFIL" class="user-circle">
+          <span>{{ usuario.nombre }}</span>
+        </button>
+        <div class="dropdown" [class.open]="menuUsuario">
+          <p><strong>{{ usuario.nombre }}</strong></p>
+          <p>{{ usuario.email }}</p>
+          <p>Rol: {{ usuario.rol }}</p>
+          <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+      </div>
+
+      <!-- Búsqueda y filtro -->
+      <div class="search-wrapper">
+        <input 
+          type="text" 
+          placeholder="Buscar..." 
+          class="search-bar"
+          [(ngModel)]="busqueda"
+          (input)="buscar()">
+        <button class="clear-search" *ngIf="busqueda" (click)="busqueda=''; buscar()">✕</button>
+      </div>
+
+      <button class="btn-filter" (click)="toggleFiltros()">FILTRAR</button>
+      <button class="btn-export" (click)="exportToExcel()">EXPORTAR A EXCEL</button>
+    </header>
+
+    <!-- Contenido de la tabla -->
+    <section class="content">
+      <div class="database-container">
+        <!-- Panel de filtros -->
+        <div class="filter-panel" [class.open]="filtrosAbiertos">
+          <div class="filter-header">
+            <h3>Filtros</h3>
+            <button class="btn-clear" (click)="limpiarFiltros()">Limpiar</button>
+          </div>
+          <div class="filter-grid">
+            <div class="filter-item">
+              <label>ID</label>
+              <input type="text" [(ngModel)]="filtros.id" (input)="aplicarFiltros()">
+            </div>
+            <div class="filter-item">
+              <label>VERSION</label>
+              <input type="text" [(ngModel)]="filtros.version" (input)="aplicarFiltros()">
+            </div>
+            <div class="filter-item">
+              <label>EMAIL</label>
+              <input type="text" [(ngModel)]="filtros.email" (input)="aplicarFiltros()">
+            </div>
+            <div class="filter-item">
+              <label>NOMBRE</label>
+              <input type="text" [(ngModel)]="filtros.nombre" (input)="aplicarFiltros()">
+            </div>
+            <div class="filter-item">
+              <label>ESTADO</label>
+              <select [(ngModel)]="filtros.estadoValidacion" (change)="aplicarFiltros()">
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="validado">Validado</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de pacientes -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>VERSION</th>
+                <th>NOMBRE</th>
+                <th>EMAIL</th>
+                <th>CREADO POR</th>
+                <th>ACTUALIZADO POR</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let paciente of pacientesFiltrados">
+                <td>{{ paciente.id }}</td>
+                <td>{{ paciente.version }}</td>
+                <td>{{ paciente.nombre }}</td>
+                <td>{{ paciente.email }}</td>
+                <td>{{ paciente.creadoPor || '-' }}</td>
+                <td>{{ paciente.actualizadoPor || '-' }}</td>
+                <td>{{ paciente.estadoValidacion || '-' }}</td>
+                <td>
+                  <button class="btn-version" (click)="nuevaVersion(paciente)">Nueva Versión</button>
+                </td>
+              </tr>
+              <tr *ngIf="pacientesFiltrados.length === 0">
+                <td colspan="8" class="no-results">No se encontraron resultados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

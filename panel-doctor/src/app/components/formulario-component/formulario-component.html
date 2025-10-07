@@ -1,0 +1,149 @@
+<div class="page-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.abierto]="menuAbierto">
+    <div class="logo-container">
+      <button class="menu-icon" (click)="toggleMenu()">☰</button>
+      <h3>MENU</h3>
+    </div>
+    <nav>
+      <button class="nav-btn" (click)="Database()">
+        <span class="text">DATABASE</span>
+      </button>
+      <button class="nav-btn" (click)="Formulario()">
+        <span class="text">FORMULARIO</span>
+      </button>
+      
+      <div class="submenu">
+        <button class="submenu-item" (click)="Version()">
+          <span>VERSIONES</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <div class="form-container">
+      <h2 class="form-title">Modelo de Consentimiento</h2> 
+      
+      <form [formGroup]="miFormulario" (ngSubmit)="onSubmit()">
+        
+        <!-- Nombre completo -->
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input 
+            formControlName="nombre" 
+            type="text" 
+            placeholder="Nombre completo"
+            [class.input-error]="nombreInvalido">
+          <span class="error-msg" *ngIf="nombreInvalido">
+            El nombre es obligatorio
+          </span>
+        </div>
+
+        <!-- Email y Dirección -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input 
+              formControlName="email" 
+              type="email" 
+              placeholder="correo@ejemplo.com"
+              [class.input-error]="emailInvalido">
+            <span class="error-msg" *ngIf="emailInvalido">
+              Email inválido
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Dirección</label>
+            <input 
+              formControlName="direccion" 
+              type="text" 
+              placeholder="Calle, número, ciudad"
+              [class.input-error]="direccionInvalido">
+            <span class="error-msg" *ngIf="direccionInvalido">
+              La dirección es obligatoria
+            </span>
+          </div>
+        </div>
+
+        <!-- Teléfono y Archivo -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input 
+              formControlName="telefono" 
+              type="tel" 
+              placeholder="+34 123 456 789"
+              [class.input-error]="telefonoInvalido">
+            <span class="error-msg" *ngIf="telefonoInvalido">
+              El teléfono es obligatorio
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Subir archivo</label>
+            <div class="file-input-wrapper">
+              <input 
+                type="file" 
+                id="file-upload"
+                (change)="onFileSelected($event)"
+                class="file-input"
+                accept=".pdf,.doc,.docx,.jpg,.png">
+              <label for="file-upload" class="file-label">
+                <span *ngIf="!nombreArchivo">📎 Seleccionar archivo</span>
+                <span *ngIf="nombreArchivo" class="file-name">📄 {{ nombreArchivo }}</span>
+              </label>
+              <button 
+                type="button" 
+                *ngIf="nombreArchivo" 
+                (click)="eliminarArchivo()"
+                class="btn-remove-file">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Versión -->
+        <div class="form-group">
+          <label>Versión</label>
+          <input 
+            formControlName="version"
+            type="text"
+            placeholder="V.1"
+            [class.input-error]="versionInvalida">
+          <span class="error-msg" *ngIf="versionInvalida">
+            La versión es obligatoria
+          </span>
+        </div>
+
+        <!-- Consentimiento -->
+        <div class="form-group checkbox-wrapper">
+          <label class="checkbox-label">
+            <input 
+              formControlName="consentimiento" 
+              type="checkbox"
+              class="checkbox-input">
+            <span class="checkbox-text">Acepto el consentimiento informado</span>
+          </label>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="button-group">
+          <button type="submit" class="btn guardar" [disabled]="miFormulario.invalid">
+           GUARDAR
+          </button>
+          <button type="button" (click)="eliminar()" class="btn eliminar">
+           ELIMINAR
+          </button>
+          <button type="button" (click)="volver()" class="btn volver">
+            ← VOLVER
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
