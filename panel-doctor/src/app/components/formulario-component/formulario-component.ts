@@ -102,7 +102,7 @@ export class FormularioComponent {
       this.marcarCamposComoTocados();
     }
   }
-
+  
   eliminar() {
     const confirmar = confirm('⚠️ ¿Estás seguro de que quieres eliminar los datos del formulario?');
     if (confirmar) {
