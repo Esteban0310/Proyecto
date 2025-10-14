@@ -1,20 +1,22 @@
 version: "3.8"
+
 services:
   db:
     image: mysql:8.0
+    container_name: proyecto-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: proyecto_clinico
       MYSQL_USER: proyecto_user
       MYSQL_PASSWORD: proyecto_pass
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./mysql/initdb.d:/docker-entrypoint-initdb.d:ro
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    networks:
+      - app-network
 
   backend:
     build: ./backend
+    container_name: proyecto-backend
     depends_on:
       - db
     environment:
@@ -23,25 +25,34 @@ services:
       MYSQL_USER: proyecto_user
       MYSQL_PASSWORD: proyecto_pass
       MYSQL_DB: proyecto_clinico
-    volumes:
-      - ./data:/data:ro
     ports:
       - "8000:8000"
-    command: >
-      sh -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      - app-network
+    volumes:
+      - ./backend:/app
+    command: sh -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
   frontend:
-    build: ./panel-doctor
-    ports:
-      - "4200:80"
+    build:
+      context: ./panel-doctor
+      dockerfile: Dockerfile.dev  # explicaremos abajo
+    container_name: proyecto-frontend
     depends_on:
       - backend
-
-  adminer:
-    image: adminer
-    restart: always
     ports:
-      - "8080:8080"
+      - "4200:4200"
+    networks:
+      - app-network
+    volumes:
+      - ./panel-doctor/src:/app/src
+      - ./panel-doctor/package.json:/app/package.json
+      - ./panel-doctor/package-lock.json:/app/package-lock.json
+    command: sh -c "npm install && ng serve --host 0.0.0.0 --poll=2000"
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   db_data:

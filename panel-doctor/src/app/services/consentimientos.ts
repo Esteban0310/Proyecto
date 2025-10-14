@@ -15,7 +15,7 @@ export interface Consentimiento {
   providedIn: 'root'
 })
 export class ConsentimientosService {
-  private apiUrl = 'http://localhost:8000/api/consentimientos';
+  private apiUrl = 'http://proyecto-backend:8000/api/consentimientos';
 
   constructor(private http: HttpClient) {}
 
