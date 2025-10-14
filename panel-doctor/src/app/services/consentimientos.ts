@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface Consentimiento {
+  id?: number;
   numeroVersion: string;
   fecha: string;
   pacienteId: string;
@@ -12,46 +15,32 @@ export interface Consentimiento {
   providedIn: 'root'
 })
 export class ConsentimientosService {
-  private storageKey = 'consentimientos';
-  private consentimientos: Consentimiento[] = [];
+  private apiUrl = 'http://localhost:8000/api/consentimientos';
 
-  constructor() {
-    this.cargarDesdeStorage();
+  constructor(private http: HttpClient) {}
+
+  // Obtener todos los consentimientos
+  getAll(): Observable<Consentimiento[]> {
+    return this.http.get<Consentimiento[]>(this.apiUrl);
   }
 
-  // Cargar consentimientos desde localStorage
-  private cargarDesdeStorage() {
-    const data = localStorage.getItem(this.storageKey);
-    if (data) {
-      this.consentimientos = JSON.parse(data);
-    } else {
-      this.consentimientos = []; // Array vacío si no hay datos
-    }
+  // Obtener consentimiento por ID
+  getById(id: number): Observable<Consentimiento> {
+    return this.http.get<Consentimiento>(`${this.apiUrl}/${id}`);
   }
 
-  // Guardar en localStorage
-  private guardarEnStorage() {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.consentimientos));
+  // Crear nuevo consentimiento
+  create(consentimiento: Consentimiento): Observable<Consentimiento> {
+    return this.http.post<Consentimiento>(this.apiUrl, consentimiento);
   }
 
-  // Buscar por número de versión
-  buscarPorVersion(numeroVersion: string): Consentimiento | undefined {
-    return this.consentimientos.find(c => c.numeroVersion === numeroVersion);
+  // Actualizar consentimiento
+  update(id: number, consentimiento: Consentimiento): Observable<Consentimiento> {
+    return this.http.put<Consentimiento>(`${this.apiUrl}/${id}`, consentimiento);
   }
 
-  // Actualizar o añadir consentimiento
-  actualizarConsentimiento(consentimiento: Consentimiento) {
-    const index = this.consentimientos.findIndex(c => c.numeroVersion === consentimiento.numeroVersion);
-    if (index !== -1) {
-      this.consentimientos[index] = consentimiento; // Actualizar existente
-    } else {
-      this.consentimientos.push(consentimiento); // Añadir nuevo
-    }
-    this.guardarEnStorage();
-  }
-
-  // Opcional: obtener todos los consentimientos
-  obtenerTodos(): Consentimiento[] {
-    return [...this.consentimientos];
+  // Eliminar consentimiento
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

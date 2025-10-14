@@ -17,6 +17,12 @@ export class FormularioComponent {
   nombreArchivo: string = '';
   pacienteActualId?: number;
 
+  nombreInvalido = false;
+  emailInvalido = false;
+  direccionInvalido = false;
+  telefonoInvalido = false;
+  versionInvalida = false;
+
   miFormulario = new FormGroup({
     nombre: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -26,29 +32,14 @@ export class FormularioComponent {
     version: new FormControl('V.1', [Validators.required])
   });
 
-  constructor(
-    private router: Router,
-    private pacientesService: PacientesService
-  ) {}
+  constructor(private router: Router, private pacientesService: PacientesService) {}
 
-  // ---- Menú ----
-  toggleMenu() {
-    this.menuAbierto = !this.menuAbierto;
-  }
+  toggleMenu() { this.menuAbierto = !this.menuAbierto; }
 
-  Database() {
-    this.router.navigate(['/admin']);
-  }
+  Database() { this.router.navigate(['/admin']); }
+  Formulario() { this.router.navigate(['/formulario']); }
+  Version() { this.router.navigate(['/version']); }
 
-  Formulario() {
-    this.router.navigate(['/formulario']);
-  }
-
-  Version(){
-    this.router.navigate(['/version']);
-  }
-
-  // ---- Archivos ----
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -62,65 +53,54 @@ export class FormularioComponent {
     this.nombreArchivo = '';
   }
 
-  // ---- Formulario ----
   onSubmit() {
-    if (this.miFormulario.valid) {
-      this.guardar();
-    } else {
+    if (!this.miFormulario.valid) {
       alert('Por favor, completa todos los campos correctamente');
       this.marcarCamposComoTocados();
+      return;
     }
+
+    const paciente: PacienteFormulario = {
+      id: this.pacienteActualId,
+      nombre: this.miFormulario.value.nombre || '',
+      email: this.miFormulario.value.email || '',
+      direccion: this.miFormulario.value.direccion || '',
+      telefono: this.miFormulario.value.telefono || '',
+      consentimiento: this.miFormulario.value.consentimiento || false,
+      archivo: this.archivoSeleccionado,
+      version: this.miFormulario.value.version || 'V.1',
+      creadoPor: 'Administrador',
+      actualizadoPor: 'Administrador',
+      fechaCreacion: new Date(),
+      fechaActualizacion: new Date()
+    };
+
+    this.pacientesService.guardarPaciente(paciente).subscribe({
+      next: () => {
+        alert('✅ Datos guardados correctamente');
+        this.limpiarFormulario();
+      },
+      error: (err) => {
+        console.error('❌ Error al guardar:', err);
+        alert('Error al conectar con el backend');
+      }
+    });
   }
 
-  guardar() {
-    if (this.miFormulario.valid) {
-      const paciente: PacienteFormulario = {
-        id: this.pacienteActualId, // undefined si es nuevo, el service asigna ID
-        nombre: this.miFormulario.value.nombre || '',
-        email: this.miFormulario.value.email || '',
-        direccion: this.miFormulario.value.direccion || '',
-        telefono: this.miFormulario.value.telefono || '',
-        consentimiento: this.miFormulario.value.consentimiento || false,
-        archivo: this.archivoSeleccionado,
-        version: this.miFormulario.value.version || 'V.1',
-        // Auditoría
-        creadoPor: 'Administrador',
-        actualizadoPor: 'Administrador',
-        fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
-      };
-
-      this.pacientesService.guardarPaciente(paciente);
-
-      alert('✅ Datos guardados correctamente');
-      console.log('Datos guardados:', paciente);
-      console.log('Total de pacientes:', this.pacientesService.obtenerPacientes().length);
-
-      this.limpiarFormulario();
-    } else {
-      alert('❌ Por favor, completa todos los campos correctamente');
-      this.marcarCamposComoTocados();
-    }
-  }
-  
   eliminar() {
-    const confirmar = confirm('⚠️ ¿Estás seguro de que quieres eliminar los datos del formulario?');
-    if (confirmar) {
+    if (this.pacienteActualId) {
+      this.pacientesService.eliminarPaciente(this.pacienteActualId).subscribe({
+        next: () => { alert('🗑️ Paciente eliminado'); this.limpiarFormulario(); },
+        error: (err) => console.error('Error al eliminar:', err)
+      });
+    } else {
       this.limpiarFormulario();
-      alert('🗑️ Datos eliminados del formulario');
     }
   }
 
   volver() {
-    const hayDatos = this.miFormulario.dirty;
-    if (hayDatos) {
-      const confirmar = confirm('Tienes datos sin guardar. ¿Deseas salir sin guardar?');
-      if (confirmar) {
-        this.router.navigate(['/admin']);
-      }
-    } else {
-      this.router.navigate(['/admin']);
-    }
+    if (this.miFormulario.dirty && !confirm('Tienes datos sin guardar. ¿Deseas salir sin guardar?')) return;
+    this.router.navigate(['/admin']);
   }
 
   private limpiarFormulario() {
@@ -132,29 +112,7 @@ export class FormularioComponent {
 
   private marcarCamposComoTocados() {
     Object.keys(this.miFormulario.controls).forEach(key => {
-      const control = this.miFormulario.get(key);
-      control?.markAsTouched();
+      this.miFormulario.get(key)?.markAsTouched();
     });
-  }
-
-  // ---- Validaciones para template ----
-  get nombreInvalido() {
-    return this.miFormulario.get('nombre')?.invalid && this.miFormulario.get('nombre')?.touched;
-  }
-
-  get emailInvalido() {
-    return this.miFormulario.get('email')?.invalid && this.miFormulario.get('email')?.touched;
-  }
-
-  get direccionInvalido() {
-    return this.miFormulario.get('direccion')?.invalid && this.miFormulario.get('direccion')?.touched;
-  }
-
-  get telefonoInvalido() {
-    return this.miFormulario.get('telefono')?.invalid && this.miFormulario.get('telefono')?.touched;
-  }
-
-  get versionInvalida() {
-    return this.miFormulario.get('version')?.invalid && this.miFormulario.get('version')?.touched;
   }
 }

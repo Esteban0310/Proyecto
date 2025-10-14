@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface PacienteFormulario {
   id?: number;
@@ -20,56 +22,23 @@ export interface PacienteFormulario {
   providedIn: 'root'
 })
 export class PacientesService {
-  private pacientes: PacienteFormulario[] = [];
-  private contadorId = 1;
+  private apiUrl = 'http://localhost:8000/api/consentimientos'; // endpoint backend
 
-  constructor() {
-    // Solo acceder a localStorage si estamos en navegador
-    if (typeof window !== 'undefined') {
-      const datosGuardados = localStorage.getItem('pacientes');
-      if (datosGuardados) {
-        this.pacientes = JSON.parse(datosGuardados);
-        this.contadorId = this.pacientes.length > 0
-          ? Math.max(...this.pacientes.map(p => p.id || 0)) + 1
-          : 1;
-      }
-    }
+  constructor(private http: HttpClient) {}
+
+  obtenerPacientes(): Observable<PacienteFormulario[]> {
+    return this.http.get<PacienteFormulario[]>(this.apiUrl);
   }
 
-  obtenerPacientes(): PacienteFormulario[] {
-    return [...this.pacientes];
+  guardarPaciente(paciente: PacienteFormulario): Observable<PacienteFormulario> {
+    return this.http.post<PacienteFormulario>(this.apiUrl, paciente);
   }
 
-  guardarPaciente(paciente: PacienteFormulario): void {
-    if (paciente.id) {
-      // Actualizar paciente existente
-      const index = this.pacientes.findIndex(p => p.id === paciente.id);
-      if (index !== -1) {
-        this.pacientes[index] = { ...paciente };
-      }
-    } else {
-      // Crear nuevo paciente
-      paciente.id = this.contadorId++;
-      paciente.fechaCreacion = new Date();
-      this.pacientes.push(paciente);
-    }
-
-    // Guardar en localStorage solo si estamos en navegador
-    this.guardarEnLocalStorage();
+  eliminarPaciente(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  eliminarPaciente(id: number): void {
-    this.pacientes = this.pacientes.filter(p => p.id !== id);
-    this.guardarEnLocalStorage();
-  }
-
-  obtenerPacientePorId(id: number): PacienteFormulario | undefined {
-    return this.pacientes.find(p => p.id === id);
-  }
-
-  private guardarEnLocalStorage(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('pacientes', JSON.stringify(this.pacientes));
-    }
+  obtenerPacientePorId(id: number): Observable<PacienteFormulario> {
+    return this.http.get<PacienteFormulario>(`${this.apiUrl}/${id}`);
   }
 }

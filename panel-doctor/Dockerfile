@@ -1,21 +1,27 @@
-# Etapa 1: Build con Node
+# Etapa 1: Build Angular
 FROM node:20-alpine AS build
 WORKDIR /app
+
+# Instalar dependencias
 COPY package*.json ./
 RUN npm install
+
+# Copiar todo el frontend
 COPY . .
-# Build de Angular para producción, solo browser
+
+# Compilar Angular para producción
 RUN npm run build -- --configuration production
 
-# Renombramos index.csr.html a index.html para Nginx
-RUN mv dist/panel-doctor/browser/index.csr.html dist/panel-doctor/browser/index.html
+# Renombrar index.csr.html a index.html si existe
+RUN if [ -f /app/dist/panel-doctor/browser/index.csr.html ]; then mv /app/dist/panel-doctor/browser/index.csr.html /app/dist/panel-doctor/browser/index.html; fi
 
 # Etapa 2: Servir con Nginx
 FROM nginx:alpine
-# Copia solo los archivos estáticos del browser a Nginx
+
+# Copiar los archivos compilados al Nginx
 COPY --from=build /app/dist/panel-doctor/browser /usr/share/nginx/html
 
-# Configuración opcional para rutas SPA (Angular)
+# Configuración SPA + proxy al backend
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
@@ -23,6 +29,12 @@ RUN echo 'server { \
     index index.html; \
     location / { \
         try_files $uri /index.html; \
+    } \
+    location /api/ { \
+        proxy_pass http://backend:8000/; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 

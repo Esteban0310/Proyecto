@@ -32,13 +32,15 @@
         <!-- Paciente -->
         <div class="form-group">
           <label>Paciente</label>
-          <select formControlName="pacienteId" [class.input-error]="pacienteInvalido">
+          <select formControlName="pacienteId"
+                  [class.input-error]="miFormulario.get('pacienteId')?.invalid && miFormulario.get('pacienteId')?.touched">
             <option value="">Seleccionar paciente</option>
             <option *ngFor="let paciente of pacientesDisponibles" [value]="paciente.id">
               {{ paciente.nombre }}
             </option>
           </select>
-          <span class="error-msg" *ngIf="pacienteInvalido">
+          <span class="error-msg"
+                *ngIf="miFormulario.get('pacienteId')?.invalid && miFormulario.get('pacienteId')?.touched">
             Debes seleccionar un paciente
           </span>
         </div>
@@ -46,8 +48,10 @@
         <!-- Número de versión -->
         <div class="form-group">
           <label>Número de versión</label>
-          <input type="text" formControlName="numeroVersion" placeholder="v1.0.0" [class.input-error]="numeroVersionInvalido">
-          <span class="error-msg" *ngIf="numeroVersionInvalido">
+          <input type="text" formControlName="numeroVersion" placeholder="v1.0.0"
+                 [class.input-error]="miFormulario.get('numeroVersion')?.invalid && miFormulario.get('numeroVersion')?.touched">
+          <span class="error-msg"
+                *ngIf="miFormulario.get('numeroVersion')?.invalid && miFormulario.get('numeroVersion')?.touched">
             El número de versión es obligatorio
           </span>
         </div>
@@ -55,8 +59,10 @@
         <!-- Fecha -->
         <div class="form-group">
           <label>Fecha</label>
-          <input type="date" formControlName="fecha" [class.input-error]="fechaInvalido">
-          <span class="error-msg" *ngIf="fechaInvalido">
+          <input type="date" formControlName="fecha"
+                 [class.input-error]="miFormulario.get('fecha')?.invalid && miFormulario.get('fecha')?.touched">
+          <span class="error-msg"
+                *ngIf="miFormulario.get('fecha')?.invalid && miFormulario.get('fecha')?.touched">
             La fecha es obligatoria
           </span>
         </div>
@@ -64,8 +70,10 @@
         <!-- Teléfono -->
         <div class="form-group">
           <label>Teléfono</label>
-          <input type="tel" formControlName="telefono" placeholder="+34 123 456 789" [class.input-error]="telefonoInvalido">
-          <span class="error-msg" *ngIf="telefonoInvalido">
+          <input type="tel" formControlName="telefono" placeholder="+34 123 456 789"
+                 [class.input-error]="miFormulario.get('telefono')?.invalid && miFormulario.get('telefono')?.touched">
+          <span class="error-msg"
+                *ngIf="miFormulario.get('telefono')?.invalid && miFormulario.get('telefono')?.touched">
             El teléfono es obligatorio
           </span>
         </div>

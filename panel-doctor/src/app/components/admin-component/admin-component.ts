@@ -48,13 +48,14 @@ export class AdminComponent implements OnInit {
   }
 
   cargarPacientes() {
-    const pacientesGuardados = this.pacientesService.obtenerPacientes();
-    this.pacientes = pacientesGuardados.map(p => ({
-      ...p,
-      version: p.version || 'V.1',
-      estadoValidacion: p.estadoValidacion || 'pendiente'
-    }));
-    this.pacientesFiltrados = [...this.pacientes];
+    this.pacientesService.obtenerPacientes().subscribe(pacientesGuardados => {
+      this.pacientes = pacientesGuardados.map((p: PacienteFormulario) => ({
+        ...p,
+        version: p.version || 'V.1',
+        estadoValidacion: p.estadoValidacion || 'pendiente'
+      }));
+      this.pacientesFiltrados = [...this.pacientes];
+    });
   }
 
   toggleMenu() {
@@ -109,20 +110,9 @@ export class AdminComponent implements OnInit {
     this.pacientesFiltrados = [...this.pacientes];
   }
 
-  Database() {
-    this.menuAbierto = false;
-    this.router.navigate(['/admin']);
-  }
-
-  Formulario() {
-    this.menuAbierto = false;
-    this.router.navigate(['/formulario']);
-  }
-
-  Version() {
-    this.menuAbierto = false;
-    this.router.navigate(['/version']);
-  }
+  Database() { this.menuAbierto = false; this.router.navigate(['/admin']); }
+  Formulario() { this.menuAbierto = false; this.router.navigate(['/formulario']); }
+  Version() { this.menuAbierto = false; this.router.navigate(['/version']); }
 
   cerrarSesion() {
     this.menuAbierto = false;
@@ -131,14 +121,13 @@ export class AdminComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // ---- NUEVA VERSION ----
   nuevaVersion(prevPaciente: Paciente) {
     const versionActual = parseInt(prevPaciente.version.replace('V.', '')) || 1;
     const nuevaVersion = versionActual + 1;
 
     const nuevoPaciente: PacienteFormulario = {
       ...prevPaciente,
-      id: undefined, // nuevo ID lo asignará el service
+      id: undefined,
       version: `V.${nuevaVersion}`,
       creadoPor: this.usuario.nombre,
       actualizadoPor: this.usuario.nombre,
@@ -147,8 +136,7 @@ export class AdminComponent implements OnInit {
       estadoValidacion: 'pendiente'
     };
 
-    this.pacientesService.guardarPaciente(nuevoPaciente);
-    this.cargarPacientes();
+    this.pacientesService.guardarPaciente(nuevoPaciente).subscribe(() => this.cargarPacientes());
   }
 
   exportToExcel() {
