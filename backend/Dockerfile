@@ -1,21 +1,34 @@
+# Imagen base ligera de Python
 FROM python:3.12-slim
 
-WORKDIR /app
+# Configuración del entorno
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PATH="/root/.local/bin:$PATH"
 
+# Directorio de trabajo
+WORKDIR /app
+
+# Instalar dependencias del sistema necesarias para MySQL y compilación
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
     curl \
     bash \
  && rm -rf /var/lib/apt/lists/*
 
+# Copiar requerimientos e instalarlos
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
+# Copiar el resto del código
 COPY . .
 
+# Exponer el puerto de FastAPI
 EXPOSE 8000
 
-CMD bash -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+# Comando de inicio
+CMD ["bash", "-c", "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]

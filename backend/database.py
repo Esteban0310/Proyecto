@@ -4,7 +4,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Cargar variables de entorno
 load_dotenv()
 
 MYSQL_USER = os.getenv("MYSQL_USER", "proyecto_user")
@@ -19,7 +18,6 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Dependencia para endpoints
 def get_db():
     db = SessionLocal()
     try:

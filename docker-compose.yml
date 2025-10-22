@@ -1,9 +1,11 @@
 version: "3.8"
 
 services:
+  # 🧩 Base de datos MySQL
   db:
     image: mysql:8.0
     container_name: proyecto-db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: proyecto_clinico
@@ -13,31 +15,39 @@ services:
       - "3307:3306"
     networks:
       - app-network
+    volumes:
+      - db_data:/var/lib/mysql
 
+  # ⚙️ Backend FastAPI
   backend:
     build: ./backend
     container_name: proyecto-backend
+    restart: always
     depends_on:
       - db
     environment:
-      DATABASE_URL: "mysql+mysqlconnector://proyecto_user:proyecto_pass@db:3306/proyecto_clinico"
-      MYSQL_HOST: db
       MYSQL_USER: proyecto_user
       MYSQL_PASSWORD: proyecto_pass
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
       MYSQL_DB: proyecto_clinico
+      DATABASE_URL: "mysql+mysqlconnector://proyecto_user:proyecto_pass@db:3306/proyecto_clinico"
     ports:
       - "8000:8000"
     networks:
       - app-network
     volumes:
       - ./backend:/app
-    command: sh -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    command: >
+      sh -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
+  # 💻 Frontend Angular
   frontend:
     build:
       context: ./panel-doctor
-      dockerfile: Dockerfile.dev  # explicaremos abajo
+      dockerfile: Dockerfile.dev
     container_name: proyecto-frontend
+    restart: always
     depends_on:
       - backend
     ports:
@@ -46,9 +56,9 @@ services:
       - app-network
     volumes:
       - ./panel-doctor/src:/app/src
-      - ./panel-doctor/package.json:/app/package.json
-      - ./panel-doctor/package-lock.json:/app/package-lock.json
-    command: sh -c "npm install && ng serve --host 0.0.0.0 --poll=2000"
+      - /app/node_modules
+    command: >
+      sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --poll=2000"
 
 networks:
   app-network:

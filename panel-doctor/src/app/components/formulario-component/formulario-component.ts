@@ -17,24 +17,24 @@ export class FormularioComponent {
   nombreArchivo: string = '';
   pacienteActualId?: number;
 
-  nombreInvalido = false;
+  // Flags de validación actualizadas
+  idConsentimientoInvalido = false;
   emailInvalido = false;
-  direccionInvalido = false;
-  telefonoInvalido = false;
   versionInvalida = false;
 
+  // FormGroup actualizado
   miFormulario = new FormGroup({
-    nombre: new FormControl('', [Validators.required]),
+    idConsentimiento: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
-    direccion: new FormControl('', [Validators.required]),
-    telefono: new FormControl('', [Validators.required]),
     consentimiento: new FormControl(false, [Validators.requiredTrue]),
     version: new FormControl('V.1', [Validators.required])
   });
 
   constructor(private router: Router, private pacientesService: PacientesService) {}
 
-  toggleMenu() { this.menuAbierto = !this.menuAbierto; }
+  toggleMenu() {
+    this.menuAbierto = !this.menuAbierto;
+  }
 
   Database() { this.router.navigate(['/admin']); }
   Formulario() { this.router.navigate(['/formulario']); }
@@ -62,10 +62,8 @@ export class FormularioComponent {
 
     const paciente: PacienteFormulario = {
       id: this.pacienteActualId,
-      nombre: this.miFormulario.value.nombre || '',
+      idConsentimiento: this.miFormulario.value.idConsentimiento || '',
       email: this.miFormulario.value.email || '',
-      direccion: this.miFormulario.value.direccion || '',
-      telefono: this.miFormulario.value.telefono || '',
       consentimiento: this.miFormulario.value.consentimiento || false,
       archivo: this.archivoSeleccionado,
       version: this.miFormulario.value.version || 'V.1',
@@ -90,7 +88,10 @@ export class FormularioComponent {
   eliminar() {
     if (this.pacienteActualId) {
       this.pacientesService.eliminarPaciente(this.pacienteActualId).subscribe({
-        next: () => { alert('🗑️ Paciente eliminado'); this.limpiarFormulario(); },
+        next: () => {
+          alert('🗑️ Paciente eliminado');
+          this.limpiarFormulario();
+        },
         error: (err) => console.error('Error al eliminar:', err)
       });
     } else {
@@ -114,5 +115,10 @@ export class FormularioComponent {
     Object.keys(this.miFormulario.controls).forEach(key => {
       this.miFormulario.get(key)?.markAsTouched();
     });
+
+    // Actualizamos las banderas de error
+    this.idConsentimientoInvalido = this.miFormulario.get('idConsentimiento')?.invalid || false;
+    this.emailInvalido = this.miFormulario.get('email')?.invalid || false;
+    this.versionInvalida = this.miFormulario.get('version')?.invalid || false;
   }
 }

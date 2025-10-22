@@ -5,6 +5,7 @@
       <button class="menu-icon" (click)="toggleMenu()">☰</button>
       <h3>MENU</h3>
     </div>
+
     <nav>
       <button class="nav-btn" (click)="Database()">
         <span class="text">DATABASE</span>
@@ -12,6 +13,7 @@
       <button class="nav-btn" (click)="Formulario()">
         <span class="text">FORMULARIO</span>
       </button>
+
       <div class="submenu">
         <button class="submenu-item" (click)="FormularioVersiones()">
           <span>FORMULARIO</span>
@@ -28,27 +30,29 @@
     <div class="form-container">
       <h2 class="form-title">Formulario de Versiones</h2>
 
-      <form [formGroup]="miFormulario" (ngSubmit)="onSubmit()">
-        <!-- Paciente -->
+      <!-- Formulario reactivo -->
+      <form *ngIf="miFormulario" [formGroup]="miFormulario" (ngSubmit)="onSubmit()">
+        
+        <!-- Consentimiento -->
         <div class="form-group">
-          <label>Paciente</label>
-          <select formControlName="pacienteId"
-                  [class.input-error]="miFormulario.get('pacienteId')?.invalid && miFormulario.get('pacienteId')?.touched">
-            <option value="">Seleccionar paciente</option>
-            <option *ngFor="let paciente of pacientesDisponibles" [value]="paciente.id">
-              {{ paciente.nombre }}
+          <label>Consentimiento</label>
+          <select formControlName="consentimientoId"
+                  [class.input-error]="miFormulario.get('consentimientoId')?.invalid && miFormulario.get('consentimientoId')?.touched">
+            <option value="">Seleccionar consentimiento</option>
+            <option *ngFor="let c of consentimientosDisponibles" [value]="c.id">
+              Consentimiento #{{ c.id }} - Paciente {{ c.pacienteId }}
             </option>
           </select>
           <span class="error-msg"
-                *ngIf="miFormulario.get('pacienteId')?.invalid && miFormulario.get('pacienteId')?.touched">
-            Debes seleccionar un paciente
+                *ngIf="miFormulario.get('consentimientoId')?.invalid && miFormulario.get('consentimientoId')?.touched">
+            Debes seleccionar un consentimiento
           </span>
         </div>
 
         <!-- Número de versión -->
         <div class="form-group">
           <label>Número de versión</label>
-          <input type="text" formControlName="numeroVersion" placeholder="v1.0.0"
+          <input type="text" formControlName="numeroVersion" placeholder="Ej: 2.0 o V.2"
                  [class.input-error]="miFormulario.get('numeroVersion')?.invalid && miFormulario.get('numeroVersion')?.touched">
           <span class="error-msg"
                 *ngIf="miFormulario.get('numeroVersion')?.invalid && miFormulario.get('numeroVersion')?.touched">
@@ -67,26 +71,30 @@
           </span>
         </div>
 
-        <!-- Teléfono -->
+        <!-- Correo electrónico -->
         <div class="form-group">
-          <label>Teléfono</label>
-          <input type="tel" formControlName="telefono" placeholder="+34 123 456 789"
-                 [class.input-error]="miFormulario.get('telefono')?.invalid && miFormulario.get('telefono')?.touched">
+          <label>Correo electrónico</label>
+          <input type="email" formControlName="correo" placeholder="usuario@correo.com"
+                 [class.input-error]="miFormulario.get('correo')?.invalid && miFormulario.get('correo')?.touched">
           <span class="error-msg"
-                *ngIf="miFormulario.get('telefono')?.invalid && miFormulario.get('telefono')?.touched">
-            El teléfono es obligatorio
+                *ngIf="miFormulario.get('correo')?.invalid && miFormulario.get('correo')?.touched">
+            El correo es obligatorio y debe tener formato válido
           </span>
         </div>
 
-        <!-- Consentimiento -->
+        <!-- Confirmación -->
         <div class="form-group checkbox-wrapper">
           <label class="checkbox-label">
             <input type="checkbox" formControlName="consentimiento" class="checkbox-input">
-            <span class="checkbox-text">Acepto el consentimiento informado</span>
+            <span class="checkbox-text">Confirmo que los datos son correctos</span>
           </label>
+          <span class="error-msg"
+                *ngIf="miFormulario.get('consentimiento')?.invalid && miFormulario.get('consentimiento')?.touched">
+            Debes confirmar antes de guardar
+          </span>
         </div>
 
-        <!-- Botones de acción -->
+        <!-- Botones -->
         <div class="button-group">
           <button type="submit" class="btn guardar" [disabled]="miFormulario.invalid">GUARDAR</button>
           <button type="button" (click)="eliminar()" class="btn eliminar">ELIMINAR</button>
@@ -97,6 +105,11 @@
           <button type="button" (click)="volver()" class="btn volver">← VOLVER</button>
         </div>
       </form>
+
+      <!-- Cargando -->
+      <div *ngIf="!miFormulario" class="loading">
+        Cargando formulario...
+      </div>
     </div>
   </div>
 </div>

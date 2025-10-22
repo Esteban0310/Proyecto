@@ -28,81 +28,53 @@
       
       <form [formGroup]="miFormulario" (ngSubmit)="onSubmit()">
         
-        <!-- Nombre completo -->
+        <!-- ID del consentimiento médico -->
         <div class="form-group">
-          <label>Nombre completo</label>
+          <label>ID del consentimiento médico</label>
           <input 
-            formControlName="nombre" 
+            formControlName="idConsentimiento" 
             type="text" 
-            placeholder="Nombre completo"
-            [class.input-error]="nombreInvalido">
-          <span class="error-msg" *ngIf="nombreInvalido">
-            El nombre es obligatorio
+            placeholder="Ej: CONS-001"
+            [class.input-error]="idConsentimientoInvalido">
+          <span class="error-msg" *ngIf="idConsentimientoInvalido">
+            El ID es obligatorio
           </span>
         </div>
 
-        <!-- Email y Dirección -->
-        <div class="form-row">
-          <div class="form-group">
-            <label>Email</label>
-            <input 
-              formControlName="email" 
-              type="email" 
-              placeholder="correo@ejemplo.com"
-              [class.input-error]="emailInvalido">
-            <span class="error-msg" *ngIf="emailInvalido">
-              Email inválido
-            </span>
-          </div>
-
-          <div class="form-group">
-            <label>Dirección</label>
-            <input 
-              formControlName="direccion" 
-              type="text" 
-              placeholder="Calle, número, ciudad"
-              [class.input-error]="direccionInvalido">
-            <span class="error-msg" *ngIf="direccionInvalido">
-              La dirección es obligatoria
-            </span>
-          </div>
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email</label>
+          <input 
+            formControlName="email" 
+            type="email" 
+            placeholder="correo@ejemplo.com"
+            [class.input-error]="emailInvalido">
+          <span class="error-msg" *ngIf="emailInvalido">
+            Email inválido
+          </span>
         </div>
 
-        <!-- Teléfono y Archivo -->
-        <div class="form-row">
-          <div class="form-group">
-            <label>Teléfono</label>
+        <!-- Archivo -->
+        <div class="form-group">
+          <label>Subir archivo</label>
+          <div class="file-input-wrapper">
             <input 
-              formControlName="telefono" 
-              type="tel" 
-              placeholder="+34 123 456 789"
-              [class.input-error]="telefonoInvalido">
-            <span class="error-msg" *ngIf="telefonoInvalido">
-              El teléfono es obligatorio
-            </span>
-          </div>
-
-          <div class="form-group">
-            <label>Subir archivo</label>
-            <div class="file-input-wrapper">
-              <input 
-                type="file" 
-                id="file-upload"
-                (change)="onFileSelected($event)"
-                class="file-input"
-                accept=".pdf,.doc,.docx,.jpg,.png">
-              <label for="file-upload" class="file-label">
-                <span *ngIf="!nombreArchivo">📎 Seleccionar archivo</span>
-                <span *ngIf="nombreArchivo" class="file-name">📄 {{ nombreArchivo }}</span>
-              </label>
-              <button 
-                type="button" 
-                *ngIf="nombreArchivo" 
-                (click)="eliminarArchivo()"
-                class="btn-remove-file">
-                ✕
-              </button>
-            </div>
+              type="file" 
+              id="file-upload"
+              (change)="onFileSelected($event)"
+              class="file-input"
+              accept=".pdf,.doc,.docx,.jpg,.png">
+            <label for="file-upload" class="file-label">
+              <span *ngIf="!nombreArchivo">📎 Seleccionar archivo</span>
+              <span *ngIf="nombreArchivo" class="file-name">📄 {{ nombreArchivo }}</span>
+            </label>
+            <button 
+              type="button" 
+              *ngIf="nombreArchivo" 
+              (click)="eliminarArchivo()"
+              class="btn-remove-file">
+              ✕
+            </button>
           </div>
         </div>
 

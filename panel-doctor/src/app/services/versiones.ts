@@ -1,74 +1,49 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
+// 🧩 Interfaz compatible con el backend
 export interface VersionFormulario {
   id?: number;
-  numeroVersion: string;
+  consentimiento_id: number;   // 🔄 reemplaza pacienteId
+  numero_version: string;      // 🔄 reemplaza numeroVersion
   fecha: string;
-  pacienteId: number;
-  pacienteNombre: string;
-  telefono: string;
-  consentimiento: boolean;
+  archivo?: string | null;
+  creado_por: string;          // 🔄 reemplaza correo
+  actualizado_por: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class Versiones {
-  private versiones: VersionFormulario[] = [];
-  private contadorId = 1;
+export class VersionesService {
+  private apiUrl = `${environment.apiUrl}/versiones/`;
 
-  constructor() {
-    // Cargar versiones del localStorage si existen
-    this.cargarVersiones();
+  constructor(private http: HttpClient) {}
+
+  /** 🟢 Crear nueva versión */
+  crearVersion(version: VersionFormulario): Observable<VersionFormulario> {
+    return this.http.post<VersionFormulario>(this.apiUrl, version);
   }
 
-  guardarVersion(version: VersionFormulario): void {
-    if (version.id) {
-      // Actualizar versión existente
-      const index = this.versiones.findIndex(v => v.id === version.id);
-      if (index !== -1) {
-        this.versiones[index] = version;
-      }
-    } else {
-      // Crear nueva versión
-      version.id = this.contadorId++;
-      this.versiones.push(version);
-    }
-    this.guardarEnLocalStorage();
+  /** 🟡 Obtener todas las versiones */
+  obtenerVersiones(): Observable<VersionFormulario[]> {
+    return this.http.get<VersionFormulario[]>(this.apiUrl);
   }
 
-  obtenerVersiones(): VersionFormulario[] {
-    return [...this.versiones];
+  /** 🔵 Obtener versión por ID */
+  obtenerVersionPorId(id: number): Observable<VersionFormulario> {
+    return this.http.get<VersionFormulario>(`${this.apiUrl}/${id}`);
   }
 
-  obtenerVersionPorId(id: number): VersionFormulario | undefined {
-    return this.versiones.find(v => v.id === id);
+  /** 🟠 Actualizar versión existente */
+  actualizarVersion(id: number, version: VersionFormulario): Observable<VersionFormulario> {
+    return this.http.put<VersionFormulario>(`${this.apiUrl}/${id}`, version);
   }
 
-  eliminarVersion(id: number): void {
-    this.versiones = this.versiones.filter(v => v.id !== id);
-    this.guardarEnLocalStorage();
-  }
-
-  obtenerVersionesPorPaciente(pacienteId: number): VersionFormulario[] {
-    return this.versiones.filter(v => v.pacienteId === pacienteId);
-  }
-
-  private guardarEnLocalStorage(): void {
-    localStorage.setItem('versiones', JSON.stringify(this.versiones));
-    localStorage.setItem('versionesContador', this.contadorId.toString());
-  }
-
-  private cargarVersiones(): void {
-    const versionesGuardadas = localStorage.getItem('versiones');
-    const contador = localStorage.getItem('versionesContador');
-    
-    if (versionesGuardadas) {
-      this.versiones = JSON.parse(versionesGuardadas);
-    }
-    
-    if (contador) {
-      this.contadorId = parseInt(contador, 10);
-    }
+  /** 🔴 Eliminar versión */
+  eliminarVersion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

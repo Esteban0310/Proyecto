@@ -1,35 +1,51 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from pydantic import BaseModel, Field
 
-class VersionConsentimientoBase(BaseModel):
-    numero_version: int
-    archivo: Optional[str] = None
-    creado_por: Optional[str] = None
-    actualizado_por: Optional[str] = None
-
-class VersionConsentimientoCreate(VersionConsentimientoBase):
-    pass
-
-class VersionConsentimiento(VersionConsentimientoBase):
-    id: int
-    fecha: datetime
+# ---------- BASE ----------
+class ConsentimientoBase(BaseModel):
+    id_consentimiento: str = Field(..., alias="idConsentimiento")
+    email: str
+    consentimiento: bool
+    archivo: str | None = None
+    version: str | None = None
+    creado_por: str | None = Field(None, alias="creadoPor")
+    actualizado_por: str | None = Field(None, alias="actualizadoPor")
+    activo: bool | None = True
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        populate_by_name = True  # Permite usar snake_case o alias camelCase
+        allow_population_by_field_name = True  # 👈 ESTA ES LA CLAVE FALTANTE
 
 
-class ConsentimientoBase(BaseModel):
-    instituto: str
-    codigo_servicio: str
-    activo: Optional[bool] = True
-
+# ---------- CREATE ----------
 class ConsentimientoCreate(ConsentimientoBase):
     pass
 
-class Consentimiento(ConsentimientoBase):
+
+# ---------- RESPONSE ----------
+class ConsentimientoResponse(ConsentimientoBase):
     id: int
-    versiones: List[VersionConsentimiento] = []
+    fecha_creacion: datetime | None = None
+    fecha_actualizacion: datetime | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        populate_by_name = True
+        allow_population_by_field_name = True
+
+
+# ---------- VERSION ----------
+class VersionConsentimientoResponse(BaseModel):
+    id: int
+    consentimiento_id: int
+    numero_version: int
+    fecha: datetime
+    archivo: str | None = None
+    creado_por: str | None = Field(None, alias="creadoPor")
+    actualizado_por: str | None = Field(None, alias="actualizadoPor")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        allow_population_by_field_name = True
