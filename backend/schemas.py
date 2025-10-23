@@ -12,10 +12,20 @@ class ConsentimientoBase(BaseModel):
     actualizado_por: str | None = Field(None, alias="actualizadoPor")
     activo: bool | None = True
 
+    # 🔹 Nuevos campos (opcionales)
+    profesional: str | None = None
+    email_profesional: str | None = Field(None, alias="emailProfesional")
+    instituto: str | None = None
+    servicio: str | None = None
+    lateralidad: str | None = None
+    aceptado: bool | None = None
+    observaciones: str | None = None
+    estado: str | None = None
+
     class Config:
         from_attributes = True
-        populate_by_name = True  # Permite usar snake_case o alias camelCase
-        allow_population_by_field_name = True  # 👈 ESTA ES LA CLAVE FALTANTE
+        populate_by_name = True
+        allow_population_by_field_name = True
 
 
 # ---------- CREATE ----------

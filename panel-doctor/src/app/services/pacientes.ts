@@ -10,7 +10,7 @@ export interface PacienteFormulario {
   consentimiento: boolean;
   version?: string;
 
-  // Campos extra...
+  // 🧩 Campos opcionales usados en tu HTML
   codigoConsentimientoInterno?: string;
   nombreArchivoCatalan?: string;
   nombreArchivoCastellano?: string;
@@ -35,11 +35,14 @@ export interface PacienteFormulario {
   codigoEConsentimiento?: string;
   observaciones?: string;
   observacionesSolicitud?: string;
-  archivo?: File | null;
-  fechaCreacion?: Date;
-  fechaActualizacion?: Date;
+
+  // Campos base de backend
+  archivo?: string | File | null;
   creadoPor?: string;
   actualizadoPor?: string;
+  fechaCreacion?: Date;
+  fechaActualizacion?: Date;
+  activo?: boolean;
   estadoValidacion?: 'pendiente' | 'validado';
 }
 
@@ -47,27 +50,44 @@ export interface PacienteFormulario {
   providedIn: 'root'
 })
 export class PacientesService {
-  private apiUrl = `${environment.apiUrl}/consentimientos/`; // ✅ unificado
+  private apiUrl = `${environment.apiUrl}/consentimientos/`;
 
   constructor(private http: HttpClient) {}
 
+  // 🟢 Obtener todos los registros
   obtenerPacientes(): Observable<PacienteFormulario[]> {
     return this.http.get<PacienteFormulario[]>(this.apiUrl);
   }
 
+  // 🟡 Guardar un nuevo paciente
   guardarPaciente(paciente: PacienteFormulario): Observable<PacienteFormulario> {
     return this.http.post<PacienteFormulario>(this.apiUrl, paciente);
   }
 
+  // 🔵 Actualizar paciente existente
   actualizarPaciente(id: number, paciente: PacienteFormulario): Observable<PacienteFormulario> {
     return this.http.put<PacienteFormulario>(`${this.apiUrl}${id}/`, paciente);
   }
 
+  // 🔴 Eliminar paciente
   eliminarPaciente(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}${id}/`);
   }
 
+  // ⚪ Obtener paciente por ID
   obtenerPacientePorId(id: number): Observable<PacienteFormulario> {
     return this.http.get<PacienteFormulario>(`${this.apiUrl}${id}/`);
+  }
+
+  // 📥 Importar Excel al backend
+  importarExcel(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${environment.apiUrl}/importar_excel/`, formData);
+  }
+
+  // 📤 (Opcional) exportar Excel si luego lo necesitas
+  exportarExcel(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}exportar_excel/`, { responseType: 'blob' });
   }
 }

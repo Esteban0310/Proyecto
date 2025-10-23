@@ -7,16 +7,26 @@ from datetime import datetime
 # Crear consentimiento
 def crear_consentimiento(db: Session, consentimiento: schemas.ConsentimientoCreate):
     db_consentimiento = models.Consentimiento(
-        id_consentimiento=consentimiento.id_consentimiento,  # alias de idConsentimiento
+        id_consentimiento=consentimiento.id_consentimiento,
         email=consentimiento.email,
         consentimiento=consentimiento.consentimiento,
         archivo=consentimiento.archivo,
         version=consentimiento.version,
-        creado_por=consentimiento.creado_por,  # alias de creadoPor
-        actualizado_por=consentimiento.actualizado_por,  # alias de actualizadoPor
+        creado_por=consentimiento.creado_por,
+        actualizado_por=consentimiento.actualizado_por,
         fecha_creacion=datetime.utcnow(),
         fecha_actualizacion=datetime.utcnow(),
         activo=consentimiento.activo,
+
+        # 🔹 Nuevos campos
+        profesional=consentimiento.profesional,
+        email_profesional=consentimiento.email_profesional,
+        instituto=consentimiento.instituto,
+        servicio=consentimiento.servicio,
+        lateralidad=consentimiento.lateralidad,
+        aceptado=consentimiento.aceptado,
+        observaciones=consentimiento.observaciones,
+        estado=consentimiento.estado,
     )
     db.add(db_consentimiento)
     db.commit()
@@ -40,15 +50,11 @@ def actualizar_consentimiento(db: Session, consentimiento_id: int, consentimient
     if not db_consentimiento:
         return None
 
-    db_consentimiento.id_consentimiento = consentimiento.id_consentimiento
-    db_consentimiento.email = consentimiento.email
-    db_consentimiento.consentimiento = consentimiento.consentimiento
-    db_consentimiento.archivo = consentimiento.archivo
-    db_consentimiento.version = consentimiento.version
-    db_consentimiento.actualizado_por = consentimiento.actualizado_por
-    db_consentimiento.fecha_actualizacion = datetime.utcnow()
-    db_consentimiento.activo = consentimiento.activo
+    for campo, valor in consentimiento.dict(exclude_unset=True).items():
+        if hasattr(db_consentimiento, campo):
+            setattr(db_consentimiento, campo, valor)
 
+    db_consentimiento.fecha_actualizacion = datetime.utcnow()
     db.commit()
     db.refresh(db_consentimiento)
     return db_consentimiento

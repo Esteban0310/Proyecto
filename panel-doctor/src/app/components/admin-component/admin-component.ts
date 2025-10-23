@@ -6,8 +6,7 @@ import * as XLSX from 'xlsx';
 import { PacientesService, PacienteFormulario } from '../../services/pacientes';
 
 interface Paciente extends PacienteFormulario {
-  servicio?: string;
-  estadoValidacion: 'pendiente' | 'validado';
+  estadoValidacion?: 'pendiente' | 'validado';
   version: string;
 }
 
@@ -41,7 +40,7 @@ export class AdminComponent implements OnInit {
     estadoValidacion: ''
   };
 
-  // Para el input de archivo Excel
+  // Input del archivo Excel
   @ViewChild('fileInput', { static: false }) fileInput!: ElementRef<HTMLInputElement>;
 
   constructor(private router: Router, private pacientesService: PacientesService) {}
@@ -50,14 +49,14 @@ export class AdminComponent implements OnInit {
     this.cargarPacientes();
   }
 
-  // ✅ Cargar pacientes
+  // ✅ Cargar pacientes desde el backend
   cargarPacientes() {
     this.pacientesService.obtenerPacientes().subscribe({
       next: (pacientesGuardados) => {
         this.pacientes = pacientesGuardados.map((p: PacienteFormulario) => ({
           ...p,
           version: p.version || 'V.1',
-          estadoValidacion: p.estadoValidacion || 'pendiente'
+          estadoValidacion: 'pendiente'
         })) as Paciente[];
         this.pacientesFiltrados = [...this.pacientes];
       },
@@ -65,7 +64,7 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  // 🔄 Refrescar datos
+  // 🔄 Refrescar
   refrescar() {
     this.cargarPacientes();
   }
@@ -95,7 +94,7 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // 🔍 Buscar y filtrar
+  // 🔍 Búsqueda y filtros
   buscar() {
     this.aplicarFiltros();
   }
@@ -137,7 +136,7 @@ export class AdminComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // 🆕 Nueva versión (mantengo tu lógica)
+  // 🆕 Nueva versión
   nuevaVersion(prevPaciente: Paciente) {
     const versionActual = parseInt((prevPaciente.version || 'V.1').replace('V.', '')) || 1;
     const nuevaVersion = versionActual + 1;
@@ -150,7 +149,7 @@ export class AdminComponent implements OnInit {
       actualizadoPor: this.usuario.nombre,
       fechaCreacion: new Date(),
       fechaActualizacion: new Date(),
-      estadoValidacion: 'pendiente'
+      activo: true
     };
 
     this.pacientesService.guardarPaciente(nuevoPaciente).subscribe(() => this.cargarPacientes());
@@ -164,47 +163,37 @@ export class AdminComponent implements OnInit {
     XLSX.writeFile(wb, 'pacientes.xlsx');
   }
 
-  // 📥 Importar desde Excel (guarda cada fila en el backend)
+  // 📥 Importar desde Excel → ahora usa backend
   importFromExcel(event: any) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const importedData: any[] = XLSX.utils.sheet_to_json(sheet, { defval: null });
-
-      // Enviamos cada fila al backend
-      const saves = importedData.map(row => {
-        return this.pacientesService.guardarPaciente(row).toPromise();
-      });
-
-      Promise.allSettled(saves).then(() => {
-        alert('✅ Importación completada');
+    this.pacientesService.importarExcel(file).subscribe({
+      next: (res: any) => {
+        alert(res.mensaje || '✅ Importación completada');
         if (this.fileInput) this.fileInput.nativeElement.value = '';
         this.cargarPacientes();
-      });
-    };
-    reader.readAsArrayBuffer(file);
+      },
+      error: (err) => {
+        console.error('❌ Error al importar:', err);
+        alert('Error al importar el archivo');
+      }
+    });
   }
 
   // ✏️ Editar paciente
   editarPaciente(paciente: Paciente) {
-    const nuevoNombre = prompt('Editar Nombre del Consentimiento:', paciente.nombreConsentimiento || '');
+    const nuevoNombre = prompt('Editar email del paciente:', paciente.email || '');
     if (nuevoNombre === null) return;
 
     const actualizado = {
       ...paciente,
-      nombreConsentimiento: nuevoNombre,
+      email: nuevoNombre,
       actualizadoPor: this.usuario.nombre,
       fechaActualizacion: new Date()
     };
 
     if (actualizado.id) {
-      // Si tienes un método updatePaciente, usa ese
       this.pacientesService.actualizarPaciente(actualizado.id, actualizado).subscribe({
         next: () => this.cargarPacientes(),
         error: (err) => console.error('❌ Error al actualizar', err)

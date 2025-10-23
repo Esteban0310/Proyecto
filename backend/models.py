@@ -19,6 +19,16 @@ class Consentimiento(database.Base):
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     activo = Column(Boolean, default=True)
 
+    # 🔹 Nuevos campos opcionales
+    profesional = Column(String(150), nullable=True)
+    email_profesional = Column(String(150), nullable=True)
+    instituto = Column(String(150), nullable=True)
+    servicio = Column(String(150), nullable=True)
+    lateralidad = Column(String(100), nullable=True)
+    aceptado = Column(Boolean, default=False)
+    observaciones = Column(String(255), nullable=True)
+    estado = Column(String(100), default="pendiente")
+
     versiones = relationship("VersionConsentimiento", back_populates="consentimiento", cascade="all, delete-orphan")
 
 

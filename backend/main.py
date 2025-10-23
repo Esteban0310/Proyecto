@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 import models
-from routers import consentimientos, versiones
+from routers import consentimientos, versiones, importar_excel  # 👈 Añade importar_excel
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +29,7 @@ app.add_middleware(
 # 🔗 Rutas
 app.include_router(consentimientos.router)
 app.include_router(versiones.router)
+app.include_router(importar_excel.router)  # 👈 Añádelo aquí
 
 @app.get("/")
 def root():

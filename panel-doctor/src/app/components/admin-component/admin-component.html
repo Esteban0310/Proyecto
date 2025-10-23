@@ -1,27 +1,30 @@
 <div class="admin-layout">
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <aside class="sidebar" [class.abierto]="menuAbierto">
     <div class="logo-container">
       <button class="menu-icon" (click)="toggleMenu()">☰</button>
-      <h3>MENU</h3>
+      <h3>MENÚ</h3>
     </div>
 
     <nav>
-      <button class="nav-btn" (click)="Database()"><span class="text">DATABASE</span></button>
-      <button class="nav-btn" (click)="Formulario()"><span class="text">FORMULARIO</span></button>
+      <button class="nav-btn" (click)="Database()">DATABASE</button>
+      <button class="nav-btn" (click)="Formulario()">FORMULARIO</button>
+      <button class="nav-btn" (click)="Version()">VERSIONES</button>
     </nav>
   </aside>
 
-  <!-- Contenido principal -->
+  <!-- CONTENIDO PRINCIPAL -->
   <div class="main-content">
     <header class="topbar">
       <h1 class="project-title">CONSENTIMIENTOS</h1>
 
+      <!-- Usuario -->
       <div class="user-menu-top">
         <button class="user-icon" (click)="toggleUserMenu()">
           <img src="" alt="PERFIL" class="user-circle">
           <span>{{ usuario.nombre }}</span>
         </button>
+
         <div class="dropdown" [class.open]="menuUsuario">
           <p><strong>{{ usuario.nombre }}</strong></p>
           <p>{{ usuario.email }}</p>
@@ -30,33 +33,27 @@
         </div>
       </div>
 
-      <!-- Barra de herramientas: búsqueda, filtros, export, importar, refrescar -->
+      <!-- Herramientas -->
       <div class="topbar-actions">
         <div class="search-wrapper">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            class="search-bar"
-            [(ngModel)]="busqueda"
-            (input)="buscar()">
+          <input type="text" placeholder="Buscar..." class="search-bar" [(ngModel)]="busqueda" (input)="buscar()">
           <button class="clear-search" *ngIf="busqueda" (click)="busqueda=''; buscar()">✕</button>
         </div>
 
-        <button class="btn-filter" (click)="toggleFiltros()">FILTRAR</button>
-        <button class="btn-export" (click)="exportToExcel()">EXPORTAR A EXCEL</button>
+        <button class="btn-filter" (click)="toggleFiltros()">⚙️ FILTRAR</button>
+        <button class="btn-export" (click)="exportToExcel()">📤 EXPORTAR</button>
 
-        <!-- Importar: usa el input hidden; el botón dispara fileInput.click() -->
-        <button class="btn-import" (click)="fileInput.click()">IMPORTAR EXCEL</button>
+        <button class="btn-import" (click)="fileInput.click()">📥 IMPORTAR</button>
         <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="importFromExcel($event)">
 
-        <!-- Botón refrescar -->
-        <button class="btn-refresh" (click)="refrescar()" title="Refrescar datos">🔄 REFRESCAR</button>
+        <button class="btn-refresh" (click)="refrescar()">🔄 REFRESCAR</button>
       </div>
     </header>
 
-    <!-- Tabla y filtros -->
+    <!-- CONTENIDO -->
     <section class="content">
       <div class="database-container">
+        <!-- FILTROS -->
         <div class="filter-panel" [class.open]="filtrosAbiertos">
           <div class="filter-header">
             <h3>Filtros</h3>
@@ -69,19 +66,19 @@
               <input type="text" [(ngModel)]="filtros.id" (input)="aplicarFiltros()">
             </div>
             <div class="filter-item">
-              <label>VERSIÓN</label>
+              <label>Versión</label>
               <input type="text" [(ngModel)]="filtros.version" (input)="aplicarFiltros()">
             </div>
             <div class="filter-item">
-              <label>EMAIL</label>
+              <label>Email</label>
               <input type="text" [(ngModel)]="filtros.email" (input)="aplicarFiltros()">
             </div>
             <div class="filter-item">
-              <label>ID CONSENTIMIENTO</label>
+              <label>ID Consentimiento</label>
               <input type="text" [(ngModel)]="filtros.idConsentimiento" (input)="aplicarFiltros()">
             </div>
             <div class="filter-item">
-              <label>ESTADO</label>
+              <label>Estado</label>
               <select [(ngModel)]="filtros.estadoValidacion" (change)="aplicarFiltros()">
                 <option value="">Todos</option>
                 <option value="pendiente">Pendiente</option>
@@ -91,7 +88,7 @@
           </div>
         </div>
 
-        <!-- Tabla de consentimientos -->
+        <!-- TABLA -->
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -100,75 +97,48 @@
                 <th>Código Interno</th>
                 <th>Archivo Catalán</th>
                 <th>Archivo Castellano</th>
-                <th>Número Versión</th>
-                <th>Nombre Consentimiento</th>
-                <th>Fecha Solicitud</th>
-                <th>Idioma Recibido</th>
+                <th>Versión</th>
+                <th>Consentimiento</th>
                 <th>Profesional</th>
-                <th>Matrícula</th>
                 <th>Email Profesional</th>
                 <th>Instituto</th>
-                <th>Código Servicio</th>
-                <th>Unidad Funcional</th>
-                <th>Biobanco</th>
+                <th>Servicio</th>
                 <th>Lateralidad</th>
-                <th>Fecha Validación IA</th>
-                <th>Fecha Reenvío Profesional</th>
                 <th>Aceptado</th>
-                <th>Idiomas Disponibles</th>
-                <th>Subida Intranet</th>
-                <th>Disponible eConsentimiento</th>
-                <th>Código eConsentimiento</th>
                 <th>Observaciones</th>
-                <th>Observaciones Solicitud</th>
-                <th>Versión</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
+
             <tbody>
               <tr *ngFor="let paciente of pacientesFiltrados">
                 <td>{{ paciente.id }}</td>
                 <td>{{ paciente.codigoConsentimientoInterno || '-' }}</td>
                 <td>{{ paciente.nombreArchivoCatalan || '-' }}</td>
                 <td>{{ paciente.nombreArchivoCastellano || '-' }}</td>
-                <td>{{ paciente.numeroVersion || '-' }}</td>
+                <td>{{ paciente.version || '-' }}</td>
                 <td>{{ paciente.nombreConsentimiento || '-' }}</td>
-                <td>{{ paciente.fechaSolicitud || '-' }}</td>
-                <td>{{ paciente.idiomaRecibido || '-' }}</td>
                 <td>{{ paciente.nombreProfesional || '-' }}</td>
-                <td>{{ paciente.matriculaProfesional || '-' }}</td>
                 <td>{{ paciente.emailProfesional || '-' }}</td>
                 <td>{{ paciente.instituto || '-' }}</td>
                 <td>{{ paciente.codigoServicio || '-' }}</td>
-                <td>{{ paciente.unidadFuncional || '-' }}</td>
-                <td>{{ paciente.biobanco || '-' }}</td>
                 <td>{{ paciente.lateralidad || '-' }}</td>
-                <td>{{ paciente.fechaValidacionIA || '-' }}</td>
-                <td>{{ paciente.fechaReenvioProfesional || '-' }}</td>
-                <td>{{ paciente.aceptadoPorProfesional ? 'Sí' : 'No' }}</td>
-                <td>{{ paciente.idiomasDisponibles || '-' }}</td>
-                <td>{{ paciente.fechaSubidaIntranet || '-' }}</td>
-                <td>{{ paciente.fechaDisponibleEConsentimiento || '-' }}</td>
-                <td>{{ paciente.codigoEConsentimiento || '-' }}</td>
+                <td>{{ paciente.aceptadoPorProfesional ? '✅' : '❌' }}</td>
                 <td>{{ paciente.observaciones || '-' }}</td>
-                <td>{{ paciente.observacionesSolicitud || '-' }}</td>
-                <td>{{ paciente.version || '-' }}</td>
-                <td>{{ paciente.estadoValidacion || '-' }}</td>
-                <td>
-                  <!-- BOTONES: Editar, Borrar (quitamos el botón "Nueva Versión" de aquí según tu petición) -->
+                <td>{{ paciente.estadoValidacion || 'pendiente' }}</td>
+                <td class="actions">
                   <button class="btn-edit" (click)="editarPaciente(paciente)">✏️</button>
                   <button class="btn-delete" (click)="eliminarPaciente(paciente.id)">🗑️</button>
                 </td>
               </tr>
 
               <tr *ngIf="pacientesFiltrados.length === 0">
-                <td colspan="28" class="no-results">No se encontraron resultados</td>
+                <td colspan="15" class="no-results">No se encontraron resultados</td>
               </tr>
             </tbody>
           </table>
         </div>
-
       </div>
     </section>
   </div>
