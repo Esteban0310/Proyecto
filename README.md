@@ -222,7 +222,7 @@ Puedes añadir imágenes del panel en la carpeta `/docs/screenshots/`:
 * Documenta rutas con OpenAPI (`/docs`).
 * Usa validaciones Pydantic para datos de entrada.
 
-## ⚖️ 19. Licencia
+## ⚖️ 18. Licencia
 
 Este proyecto no incluye una licencia explícita. Puedes agregar una de las siguientes:
 
