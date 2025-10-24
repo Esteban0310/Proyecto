@@ -1,25 +1,3 @@
-## 📋 Índice
-1. Descripción general
-2. Objetivos del sistema
-3. Características principales
-4. Arquitectura general
-5. Tecnologías usadas
-6. Estructura del proyecto
-7. Requisitos previos
-8. Instalación y ejecución (Docker)
-9. Ejecución local (sin Docker)
-10. Variables de entorno
-11. Base de datos y migraciones
-12. API REST — Endpoints principales
-13. Importar / Exportar (Excel)
-14. Solución de problemas comunes
-15. Capturas de pantalla (sugerido)
-16. Cómo contribuir
-17. Buenas prácticas
-18. Autor y contacto
-19. Licencia
-
----
 
 ## 🧩 1. Descripción general
 
