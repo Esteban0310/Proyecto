@@ -1,7 +1,7 @@
 
 ## 🧩 1. Descripción general
 
-Este proyecto es una **aplicación web full-stack** que gestiona documentos o consentimientos médicos, permitiendo:
+Este proyecto es una **aplicación web** que gestiona documentos o consentimientos médicos, permitiendo:
 
 * Registrar, listar y versionar consentimientos.
 * Importar y exportar registros desde/hacia archivos Excel o CSV.
