@@ -222,12 +222,6 @@ Puedes añadir imágenes del panel en la carpeta `/docs/screenshots/`:
 * Documenta rutas con OpenAPI (`/docs`).
 * Usa validaciones Pydantic para datos de entrada.
 
-## 👤 18. Autor y contacto
-
-**Autor:** Juan Esteban Rojas Chávez
-**Email:** [test@gmail.com](mailto:test@gmail.com)
-**Repositorio:** *(añadir URL de GitHub o GitLab)*
-
 ## ⚖️ 19. Licencia
 
 Este proyecto no incluye una licencia explícita. Puedes agregar una de las siguientes:
@@ -237,5 +231,3 @@ Este proyecto no incluye una licencia explícita. Puedes agregar una de las sigu
 * GPL 3.0 — Para software libre con derivaciones abiertas.
 
 ---
-
-✨ **Consejo final:** este README está listo para entregarse a un tutor o subirlo a GitHub.  Incluye toda la documentación técnica, guía de instalación y contexto funcional. Si lo deseas, puedo generar también la versión en inglés o incluir ejemplos de respuesta JSON de la API.
