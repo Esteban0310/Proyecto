@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -10,7 +10,7 @@ export interface PacienteFormulario {
   consentimiento: boolean;
   version?: string;
 
-  // 🧩 Campos opcionales usados en tu HTML
+  // Campos opcionales
   codigoConsentimientoInterno?: string;
   nombreArchivoCatalan?: string;
   nombreArchivoCastellano?: string;
@@ -36,7 +36,7 @@ export interface PacienteFormulario {
   observaciones?: string;
   observacionesSolicitud?: string;
 
-  // Campos base de backend
+  // Campos base del backend
   archivo?: string | File | null;
   creadoPor?: string;
   actualizadoPor?: string;
@@ -50,6 +50,7 @@ export interface PacienteFormulario {
   providedIn: 'root'
 })
 export class PacientesService {
+  // 🔹 IMPORTANTE: barra final '/' para evitar redirecciones 307
   private apiUrl = `${environment.apiUrl}/consentimientos/`;
 
   constructor(private http: HttpClient) {}
@@ -80,13 +81,15 @@ export class PacientesService {
   }
 
   // 📥 Importar Excel al backend
-  importarExcel(file: File): Observable<any> {
+  importarExcel(file: File): Observable<{ mensaje: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${environment.apiUrl}/importar_excel/`, formData);
+
+    // ✅ Usamos la ruta exacta del backend que ya tiene /api/importar_excel/
+    return this.http.post<{ mensaje: string }>(`${environment.apiUrl}/importar_excel/`, formData);
   }
 
-  // 📤 (Opcional) exportar Excel si luego lo necesitas
+  // 📤 Exportar Excel (opcional)
   exportarExcel(): Observable<Blob> {
     return this.http.get(`${this.apiUrl}exportar_excel/`, { responseType: 'blob' });
   }

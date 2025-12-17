@@ -7,13 +7,14 @@ from database import SessionLocal
 import models
 import traceback
 import re
+from datetime import datetime
 
 router = APIRouter(
     prefix="/api",
     tags=["Importar Excel"]
 )
 
-# 🧰 Normaliza los nombres de columnas a snake_case
+# Normaliza nombres de columnas a snake_case
 def normalize_col_name(name: str) -> str:
     if name is None:
         return ""
@@ -22,7 +23,7 @@ def normalize_col_name(name: str) -> str:
     s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", s)
     return s.lower()
 
-# 🧰 Convierte texto a booleano
+# Convierte texto a booleano
 def parse_bool(v) -> bool:
     if v is None:
         return False
@@ -40,84 +41,90 @@ async def importar_excel(file: UploadFile = File(...)):
     contents = await file.read()
 
     try:
-        # Intentar leer como Excel
+        # Leer Excel o CSV
         try:
             df = pd.read_excel(BytesIO(contents))
         except Exception:
-            # Si no es Excel válido, intentar como CSV
             try:
                 df = pd.read_csv(StringIO(contents.decode("utf-8")))
             except Exception as e_csv:
                 raise HTTPException(status_code=400, detail=f"No se pudo leer el archivo como Excel o CSV: {e_csv}")
 
         # Normalizar encabezados
-        original_columns = list(df.columns)
-        mapped = {col: normalize_col_name(str(col)) for col in original_columns}
-        df = df.rename(columns=mapped)
+        df.columns = [normalize_col_name(col) for col in df.columns]
 
-        # Columnas requeridas
+        # Columnas obligatorias
         columnas_requeridas = {"id_consentimiento", "email", "consentimiento"}
         if not columnas_requeridas.issubset(set(df.columns)):
             faltantes = columnas_requeridas - set(df.columns)
             raise HTTPException(
                 status_code=400,
-                detail=f"Faltan columnas requeridas en el Excel: {', '.join(faltantes)}. "
-                       f"Encabezados detectados: {', '.join(df.columns)}"
+                detail=f"Faltan columnas requeridas en el Excel: {', '.join(faltantes)}"
             )
 
+        # Filtrar filas vacías
+        df = df.dropna(subset=["id_consentimiento", "email"], how="any")
+
+        if df.empty:
+            raise HTTPException(status_code=400, detail="No hay filas válidas para importar.")
+
+        # Tomar SOLO la primera fila válida
+        row = df.iloc[0]
+
         db: Session = SessionLocal()
-        insertados = 0
-        saltadas = 0
 
-        for idx, row in df.iterrows():
-            if row.isnull().all():
-                saltadas += 1
-                continue
+        # Evitar duplicados
+        existe = db.query(models.Consentimiento).filter(
+            models.Consentimiento.id_consentimiento == str(row["id_consentimiento"])
+        ).first()
 
-            try:
-                id_consent = row.get("id_consentimiento") or row.get("idconsentimiento")
-                email = row.get("email")
-                if pd.isna(id_consent) or pd.isna(email):
-                    print(f"⚠️ Saltando fila {idx}: falta id_consentimiento o email. Valores: {row.to_dict()}")
-                    saltadas += 1
-                    continue
+        if existe:
+            db.close()
+            return {"mensaje": "⚠️ Registro ya existe y no se importó."}
 
-                consentimiento_val = parse_bool(row.get("consentimiento"))
-                archivo_val = row.get("archivo") if not pd.isna(row.get("archivo")) else None
-                version_val = row.get("version") if not pd.isna(row.get("version")) else None
+        # Campos opcionales
+        archivo_val = row.get("archivo") if "archivo" in row and not pd.isna(row.get("archivo")) else None
+        version_val = row.get("version") if "version" in row and not pd.isna(row.get("version")) else None
+        profesional_val = row.get("profesional") if "profesional" in row and not pd.isna(row.get("profesional")) else None
+        email_prof_val = row.get("email_profesional") if "email_profesional" in row and not pd.isna(row.get("email_profesional")) else None
+        instituto_val = row.get("instituto") if "instituto" in row and not pd.isna(row.get("instituto")) else None
+        servicio_val = row.get("servicio") if "servicio" in row and not pd.isna(row.get("servicio")) else None
+        lateralidad_val = row.get("lateralidad") if "lateralidad" in row and not pd.isna(row.get("lateralidad")) else None
+        aceptado_val = parse_bool(row.get("aceptado")) if "aceptado" in row else False
+        observaciones_val = row.get("observaciones") if "observaciones" in row and not pd.isna(row.get("observaciones")) else None
+        estado_val = row.get("estado") if "estado" in row and not pd.isna(row.get("estado")) else "pendiente"
+        estado_validacion_val = row.get("estadovalidacion") if "estadovalidacion" in row and not pd.isna(row.get("estadovalidacion")) else "pendiente"
 
-                nuevo = models.Consentimiento(
-                    id_consentimiento=str(id_consent),
-                    email=str(email),
-                    consentimiento=consentimiento_val,
-                    archivo=str(archivo_val) if archivo_val is not None else None,
-                    version=str(version_val) if version_val is not None else None,
-                    creado_por="import_excel",
-                    actualizado_por="import_excel",
-                    activo=True
-                )
+        nuevo = models.Consentimiento(
+            id_consentimiento=str(row["id_consentimiento"]),
+            email=str(row["email"]),
+            consentimiento=parse_bool(row["consentimiento"]),
+            archivo=str(archivo_val) if archivo_val else None,
+            version=str(version_val) if version_val else None,
+            creado_por="import_excel",
+            actualizado_por="import_excel",
+            activo=True,
+            profesional=str(profesional_val) if profesional_val else None,
+            email_profesional=str(email_prof_val) if email_prof_val else None,
+            instituto=str(instituto_val) if instituto_val else None,
+            servicio=str(servicio_val) if servicio_val else None,
+            lateralidad=str(lateralidad_val) if lateralidad_val else None,
+            aceptado=aceptado_val,
+            observaciones=str(observaciones_val) if observaciones_val else None,
+            estado=str(estado_val),
+            estadovalidacion=str(estado_validacion_val),
+            fecha_creacion=datetime.now(),
+            fecha_actualizacion=datetime.now()
+        )
 
-                db.add(nuevo)
-                insertados += 1
-
-            except Exception as fila_err:
-                print(f"⚠️ Error procesando fila {idx}: {fila_err}")
-                print("Fila:", row.to_dict())
-                traceback.print_exc()
-                saltadas += 1
-                continue
-
+        db.add(nuevo)
         db.commit()
         db.close()
 
-        return {
-            "mensaje": f"✅ Se importaron {insertados} registros correctamente.",
-            "filas_saltadas": saltadas
-        }
+        return {"mensaje": "✅ Registro importado correctamente (solo 1 fila)."}
 
     except HTTPException:
         raise
     except Exception as e:
-        print("❌ ERROR AL IMPORTAR EXCEL:")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
