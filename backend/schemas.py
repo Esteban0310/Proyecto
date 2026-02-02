@@ -26,12 +26,10 @@ class ConsentimientoBase(BaseModel):
         from_attributes = True
         populate_by_name = True
         allow_population_by_field_name = True
-
-
+        
 # ---------- CREATE ----------
 class ConsentimientoCreate(ConsentimientoBase):
     pass
-
 
 # ---------- RESPONSE ----------
 class ConsentimientoResponse(ConsentimientoBase):

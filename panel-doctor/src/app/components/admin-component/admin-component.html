@@ -45,7 +45,6 @@
 
         <button class="btn-import" (click)="fileInput.click()">📥 IMPORTAR</button>
         <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="importFromExcel($event)">
-
         <button class="btn-refresh" (click)="refrescar()">🔄 REFRESCAR</button>
       </div>
     </header>
@@ -115,8 +114,31 @@
               <tr *ngFor="let paciente of pacientesFiltrados">
                 <td>{{ paciente.id }}</td>
                 <td>{{ paciente.codigoConsentimientoInterno || '-' }}</td>
-                <td>{{ paciente.nombreArchivoCatalan || '-' }}</td>
-                <td>{{ paciente.nombreArchivoCastellano || '-' }}</td>
+                
+                <!-- ✅ COLUMNA ARCHIVO CATALÁN -->
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>{{ paciente.nombreArchivoCatalan || '-' }}</span>
+                    <button class="btn-upload-catalan" (click)="fileCatalan.click()" title="Subir archivo Catalán">
+                      📄
+                    </button>
+                    <input #fileCatalan type="file" hidden accept=".pdf,.doc,.docx" 
+                           (change)="subirArchivoCatalan($event, paciente)">
+                  </div>
+                </td>
+                
+                <!-- ✅ COLUMNA ARCHIVO CASTELLANO -->
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>{{ paciente.nombreArchivoCastellano || '-' }}</span>
+                    <button class="btn-upload-castellano" (click)="fileCastellano.click()" title="Subir archivo Castellano">
+                      📄
+                    </button>
+                    <input #fileCastellano type="file" hidden accept=".pdf,.doc,.docx" 
+                           (change)="subirArchivoCastellano($event, paciente)">
+                  </div>
+                </td>
+                
                 <td>{{ paciente.version || '-' }}</td>
                 <td>{{ paciente.nombreConsentimiento || '-' }}</td>
                 <td>{{ paciente.nombreProfesional || '-' }}</td>
@@ -128,6 +150,11 @@
                 <td>{{ paciente.observaciones || '-' }}</td>
                 <td>{{ paciente.estadoValidacion || 'pendiente' }}</td>
                 <td class="actions">
+                  <button class="btn-save" (click)="guardarPaciente(paciente)" 
+                          [class.modified]="paciente.modificado"
+                          title="Guardar cambios">
+                    💾
+                  </button>
                   <button class="btn-edit" (click)="editarPaciente(paciente)">✏️</button>
                   <button class="btn-delete" (click)="eliminarPaciente(paciente.id)">🗑️</button>
                 </td>

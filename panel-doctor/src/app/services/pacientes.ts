@@ -9,7 +9,7 @@ export interface PacienteFormulario {
   email: string;
   consentimiento: boolean;
   version?: string;
-
+  
   // Campos opcionales
   codigoConsentimientoInterno?: string;
   nombreArchivoCatalan?: string;
@@ -35,7 +35,7 @@ export interface PacienteFormulario {
   codigoEConsentimiento?: string;
   observaciones?: string;
   observacionesSolicitud?: string;
-
+  
   // Campos base del backend
   archivo?: string | File | null;
   creadoPor?: string;
@@ -80,11 +80,12 @@ export class PacientesService {
     return this.http.get<PacienteFormulario>(`${this.apiUrl}${id}/`);
   }
 
-  // 📥 Importar Excel al backend
+  // 📥 Importar Excel al backend - MÉTODO CORREGIDO
   importarExcel(file: File): Observable<{ mensaje: string }> {
     const formData = new FormData();
-    formData.append('file', file);
-
+    formData.append('file', file, file.name);
+    
+    // ✅ NO envíes headers manualmente, Angular lo hace automáticamente
     // ✅ Usamos la ruta exacta del backend que ya tiene /api/importar_excel/
     return this.http.post<{ mensaje: string }>(`${environment.apiUrl}/importar_excel/`, formData);
   }

@@ -54,17 +54,12 @@ def crear_version(version_data: dict, db: Session = Depends(get_db)):
     consentimiento.actualizado_por = version_data.get("actualizado_por")
     consentimiento.fecha_actualizacion = datetime.utcnow()
     db.commit()
-
     return {"message": "✅ Versión creada correctamente", "id": nueva_version.id}
-
-
 # ✅ Obtener todas las versiones
 @router.get("/")
 def obtener_versiones(db: Session = Depends(get_db)):
     versiones = db.query(models.VersionConsentimiento).all()
     return versiones
-
-
 # ✅ Obtener versiones por consentimiento
 @router.get("/consentimiento/{consentimiento_id}")
 def obtener_versiones_por_consentimiento(consentimiento_id: int, db: Session = Depends(get_db)):
@@ -74,8 +69,6 @@ def obtener_versiones_por_consentimiento(consentimiento_id: int, db: Session = D
     if not versiones:
         raise HTTPException(status_code=404, detail="No se encontraron versiones para este consentimiento")
     return versiones
-
-
 # ✅ Eliminar versión
 @router.delete("/{version_id}")
 def eliminar_version(version_id: int, db: Session = Depends(get_db)):
