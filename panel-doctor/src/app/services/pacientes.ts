@@ -26,13 +26,21 @@ export interface PacienteFormulario {
   unidadFuncional?: string;
   biobanco?: string;
   lateralidad?: string;
+  
+  // ✅ CAMPOS DE VALIDACIÓN
   fechaValidacionIA?: string;
   fechaReenvioProfesional?: string;
-  aceptadoPorProfesional?: boolean;
+  aceptadoPorProfesional?: boolean | 'si' | 'no_contesta' | 'no';
   idiomasDisponibles?: string;
   fechaSubidaIntranet?: string;
   fechaDisponibleEConsentimiento?: string;
   codigoEConsentimiento?: string;
+  observacionesValidacion?: string;
+  
+  // ✅ CAMPOS DE LINKS
+  linkConsentimientoDefinitivoCatala?: string;
+  linkConsentimientoDefinitivoCastellano?: string;
+  
   observaciones?: string;
   observacionesSolicitud?: string;
   
@@ -50,47 +58,36 @@ export interface PacienteFormulario {
   providedIn: 'root'
 })
 export class PacientesService {
-  // 🔹 IMPORTANTE: barra final '/' para evitar redirecciones 307
   private apiUrl = `${environment.apiUrl}/consentimientos/`;
 
   constructor(private http: HttpClient) {}
 
-  // 🟢 Obtener todos los registros
   obtenerPacientes(): Observable<PacienteFormulario[]> {
     return this.http.get<PacienteFormulario[]>(this.apiUrl);
   }
 
-  // 🟡 Guardar un nuevo paciente
   guardarPaciente(paciente: PacienteFormulario): Observable<PacienteFormulario> {
     return this.http.post<PacienteFormulario>(this.apiUrl, paciente);
   }
 
-  // 🔵 Actualizar paciente existente
   actualizarPaciente(id: number, paciente: PacienteFormulario): Observable<PacienteFormulario> {
     return this.http.put<PacienteFormulario>(`${this.apiUrl}${id}/`, paciente);
   }
 
-  // 🔴 Eliminar paciente
   eliminarPaciente(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}${id}/`);
   }
 
-  // ⚪ Obtener paciente por ID
   obtenerPacientePorId(id: number): Observable<PacienteFormulario> {
     return this.http.get<PacienteFormulario>(`${this.apiUrl}${id}/`);
   }
 
-  // 📥 Importar Excel al backend - MÉTODO CORREGIDO
   importarExcel(file: File): Observable<{ mensaje: string }> {
     const formData = new FormData();
     formData.append('file', file, file.name);
-    
-    // ✅ NO envíes headers manualmente, Angular lo hace automáticamente
-    // ✅ Usamos la ruta exacta del backend que ya tiene /api/importar_excel/
     return this.http.post<{ mensaje: string }>(`${environment.apiUrl}/importar_excel/`, formData);
   }
 
-  // 📤 Exportar Excel (opcional)
   exportarExcel(): Observable<Blob> {
     return this.http.get(`${this.apiUrl}exportar_excel/`, { responseType: 'blob' });
   }

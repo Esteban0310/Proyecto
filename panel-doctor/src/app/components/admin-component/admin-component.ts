@@ -57,7 +57,6 @@ export class AdminComponent implements OnInit {
     this.cargarPacientes();
   }
 
-  // ---------- CARGAR ----------
   cargarPacientes() {
     this.pacientesService.obtenerPacientes().subscribe({
       next: (data) => {
@@ -77,7 +76,6 @@ export class AdminComponent implements OnInit {
     this.cargarPacientes();
   }
 
-  // ---------- MENÚ ----------
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
     this.menuUsuario = false;
@@ -96,7 +94,6 @@ export class AdminComponent implements OnInit {
     this.menuUsuario = false;
   }
 
-  // ---------- FILTROS ----------
   buscar() {
     this.aplicarFiltros();
   }
@@ -129,15 +126,14 @@ export class AdminComponent implements OnInit {
     this.pacientesFiltrados = [...this.pacientes];
   }
 
-  // ---------- NAVEGACIÓN ----------
   Database() { this.router.navigate(['/admin']); }
   Formulario() { this.router.navigate(['/formulario']); }
   Version() { this.router.navigate(['/version']); }
   cerrarSesion() { this.router.navigate(['/login']); }
 
-  // editar el consentimiento creado 
+  // ✅ EDITAR TODOS LOS CAMPOS (ANTIGUOS + NUEVOS)
   editarPaciente(paciente: Paciente) {
-
+    // CAMPOS ANTIGUOS
     const codigoInterno = prompt('Código interno:', paciente.codigoConsentimientoInterno ?? '');
     if (codigoInterno === null) return;
 
@@ -156,32 +152,93 @@ export class AdminComponent implements OnInit {
     const codigoServicio = prompt('Servicio:', paciente.codigoServicio ?? '');
     if (codigoServicio === null) return;
 
+    const lateralidad = prompt('Lateralidad:', paciente.lateralidad ?? '');
+    if (lateralidad === null) return;
+
     const observaciones = prompt('Observaciones:', paciente.observaciones ?? '');
     if (observaciones === null) return;
 
     const aceptadoTxt = prompt(
-      '¿Aceptado por profesional? (si / no)',
+      '¿Aceptado? (si / no)',
       paciente.aceptadoPorProfesional ? 'si' : 'no'
     );
     if (aceptadoTxt === null) return;
 
+    // ✅ NUEVOS CAMPOS DE VALIDACIÓN
+    const fechaValidacionIA = prompt('Fecha Validación IA (YYYY-MM-DD):', paciente.fechaValidacionIA ?? '');
+    if (fechaValidacionIA === null) return;
+
+    const fechaReenvioProfesional = prompt('Fecha Reenvío Profesional (YYYY-MM-DD):', paciente.fechaReenvioProfesional ?? '');
+    if (fechaReenvioProfesional === null) return;
+
+    const aceptadoPorProfesional = prompt(
+      'Aceptado por Profesional (si / no_contesta / no):', 
+      typeof paciente.aceptadoPorProfesional === 'string' ? paciente.aceptadoPorProfesional : (paciente.aceptadoPorProfesional ? 'si' : 'no')
+    );
+    if (aceptadoPorProfesional === null) return;
+
+    const idiomasDisponibles = prompt(
+      'Idiomas Disponibles (catala / espanyol / ambos):', 
+      paciente.idiomasDisponibles ?? ''
+    );
+    if (idiomasDisponibles === null) return;
+
+    const fechaSubidaIntranet = prompt('Fecha Subida Intranet (YYYY-MM-DD):', paciente.fechaSubidaIntranet ?? '');
+    if (fechaSubidaIntranet === null) return;
+
+    const fechaDisponibleEConsentimiento = prompt('Fecha Disponible eConsentimiento (YYYY-MM-DD):', paciente.fechaDisponibleEConsentimiento ?? '');
+    if (fechaDisponibleEConsentimiento === null) return;
+
+    const codigoEConsentimiento = prompt('Código eConsentimiento:', paciente.codigoEConsentimiento ?? '');
+    if (codigoEConsentimiento === null) return;
+
+    const observacionesValidacion = prompt('Observaciones Validación:', paciente.observacionesValidacion ?? '');
+    if (observacionesValidacion === null) return;
+
+    // ✅ NUEVOS CAMPOS DE LINKS
+    const linkConsentimientoDefinitivoCatala = prompt('Link Consentimiento Definitivo Català:', paciente.linkConsentimientoDefinitivoCatala ?? '');
+    if (linkConsentimientoDefinitivoCatala === null) return;
+
+    const linkConsentimientoDefinitivoCastellano = prompt('Link Consentimiento Definitivo Castellano:', paciente.linkConsentimientoDefinitivoCastellano ?? '');
+    if (linkConsentimientoDefinitivoCastellano === null) return;
+
     const actualizado: Paciente = {
       ...paciente,
+      // CAMPOS ANTIGUOS
       codigoConsentimientoInterno: codigoInterno,
       nombreConsentimiento,
       nombreProfesional,
       emailProfesional,
       instituto,
       codigoServicio,
+      lateralidad,
       observaciones,
       aceptadoPorProfesional: aceptadoTxt.toLowerCase() === 'si',
+      
+      // ✅ NUEVOS CAMPOS DE VALIDACIÓN
+      fechaValidacionIA: fechaValidacionIA || undefined,
+      fechaReenvioProfesional: fechaReenvioProfesional || undefined,
+      idiomasDisponibles: idiomasDisponibles || undefined,
+      fechaSubidaIntranet: fechaSubidaIntranet || undefined,
+      fechaDisponibleEConsentimiento: fechaDisponibleEConsentimiento || undefined,
+      codigoEConsentimiento: codigoEConsentimiento || undefined,
+      observacionesValidacion: observacionesValidacion || undefined,
+      
+      // ✅ NUEVOS CAMPOS DE LINKS
+      linkConsentimientoDefinitivoCatala: linkConsentimientoDefinitivoCatala || undefined,
+      linkConsentimientoDefinitivoCastellano: linkConsentimientoDefinitivoCastellano || undefined,
+      
       actualizadoPor: this.usuario.nombre,
       fechaActualizacion: new Date(),
       modificado: true
     };
 
+    // Asignar el valor de aceptadoPorProfesional correctamente
+    if (aceptadoPorProfesional) {
+      actualizado.aceptadoPorProfesional = aceptadoPorProfesional as 'si' | 'no_contesta' | 'no';
+    }
+
     if (!actualizado.id) return;
-    // Actualizar en memoria sin guardar automáticamente
     const i = this.pacientes.findIndex(p => p.id === actualizado.id);
     if (i !== -1) {
       this.pacientes[i] = actualizado;
@@ -189,7 +246,6 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // Eliminar el consentimiento creado 
   eliminarPaciente(id?: number) {
     if (!id) return;
     if (!confirm('¿Seguro que deseas eliminar este registro?')) return;
@@ -200,7 +256,6 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  // exportar en excel 
   exportToExcel() {
     const ws = XLSX.utils.json_to_sheet(this.pacientesFiltrados);
     const wb = XLSX.utils.book_new();
@@ -221,7 +276,6 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  // Subir archivo en catalan 
   subirArchivoCatalan(event: any, paciente: Paciente) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -233,7 +287,6 @@ export class AdminComponent implements OnInit {
     console.log('Archivo Catalán seleccionado:', file.name, '- Presiona GUARDAR para subir');
   }
 
-  // subir archivo en castellano 
   subirArchivoCastellano(event: any, paciente: Paciente) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -245,7 +298,6 @@ export class AdminComponent implements OnInit {
     console.log('Archivo Castellano seleccionado:', file.name, '- Presiona GUARDAR para subir');
   }
 
-  // guardar cambios de la tabla de los consentimientos 
   guardarPaciente(paciente: Paciente) {
     if (!paciente.id) {
       alert('❌ No se puede guardar: falta el ID del paciente');
@@ -270,7 +322,6 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  // ---------- 💾 GUARDAR TODOS ----------
   guardarTodos() {
     if (!confirm('¿Deseas guardar todos los cambios realizados?')) return;
 
