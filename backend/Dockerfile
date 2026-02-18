@@ -10,14 +10,7 @@ ENV PATH="/root/.local/bin:$PATH"
 WORKDIR /app
 
 # Instalar dependencias del sistema necesarias para MySQL y compilación
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    curl \
-    bash \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends 
 
 # Copiar requerimientos e instalarlos
 COPY requirements.txt .
