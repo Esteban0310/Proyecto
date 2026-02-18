@@ -45,7 +45,6 @@
 
         <button class="btn-import" (click)="fileInput.click()">📥 IMPORTAR</button>
         <input #fileInput type="file" accept=".xlsx,.xls,.csv" hidden (change)="importFromExcel($event)">
-
         <button class="btn-refresh" (click)="refrescar()">🔄 REFRESCAR</button>
       </div>
     </header>
@@ -106,6 +105,19 @@
                 <th>Lateralidad</th>
                 <th>Aceptado</th>
                 <th>Observaciones</th>
+                
+                <!-- ✅ NUEVAS COLUMNAS -->
+                <th>Fecha Val. IA</th>
+                <th>Fecha Reenvío Prof.</th>
+                <th>Aceptado Prof.</th>
+                <th>Idiomas Disp.</th>
+                <th>Fecha Subida Intranet</th>
+                <th>Fecha Disp. eConsent.</th>
+                <th>Código eConsent.</th>
+                <th>Observ. Validación</th>
+                <th>Link CA</th>
+                <th>Link ES</th>
+                
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -115,8 +127,31 @@
               <tr *ngFor="let paciente of pacientesFiltrados">
                 <td>{{ paciente.id }}</td>
                 <td>{{ paciente.codigoConsentimientoInterno || '-' }}</td>
-                <td>{{ paciente.nombreArchivoCatalan || '-' }}</td>
-                <td>{{ paciente.nombreArchivoCastellano || '-' }}</td>
+                
+                <!-- COLUMNA ARCHIVO CATALÁN -->
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>{{ paciente.nombreArchivoCatalan || '-' }}</span>
+                    <button class="btn-upload-catalan" (click)="fileCatalan.click()" title="Subir archivo Catalán">
+                      📄
+                    </button>
+                    <input #fileCatalan type="file" hidden accept=".pdf,.doc,.docx" 
+                           (change)="subirArchivoCatalan($event, paciente)">
+                  </div>
+                </td>
+                
+                <!-- COLUMNA ARCHIVO CASTELLANO -->
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>{{ paciente.nombreArchivoCastellano || '-' }}</span>
+                    <button class="btn-upload-castellano" (click)="fileCastellano.click()" title="Subir archivo Castellano">
+                      📄
+                    </button>
+                    <input #fileCastellano type="file" hidden accept=".pdf,.doc,.docx" 
+                           (change)="subirArchivoCastellano($event, paciente)">
+                  </div>
+                </td>
+                
                 <td>{{ paciente.version || '-' }}</td>
                 <td>{{ paciente.nombreConsentimiento || '-' }}</td>
                 <td>{{ paciente.nombreProfesional || '-' }}</td>
@@ -126,15 +161,45 @@
                 <td>{{ paciente.lateralidad || '-' }}</td>
                 <td>{{ paciente.aceptadoPorProfesional ? '✅' : '❌' }}</td>
                 <td>{{ paciente.observaciones || '-' }}</td>
+                
+                <!-- ✅ NUEVAS CELDAS DE VALIDACIÓN -->
+                <td>{{ paciente.fechaValidacionIA || '-' }}</td>
+                <td>{{ paciente.fechaReenvioProfesional || '-' }}</td>
+                <td>{{ paciente.aceptadoPorProfesional || '-' }}</td>
+                <td>{{ paciente.idiomasDisponibles || '-' }}</td>
+                <td>{{ paciente.fechaSubidaIntranet || '-' }}</td>
+                <td>{{ paciente.fechaDisponibleEConsentimiento || '-' }}</td>
+                <td>{{ paciente.codigoEConsentimiento || '-' }}</td>
+                <td>{{ paciente.observacionesValidacion || '-' }}</td>
+                
+                <!-- ✅ NUEVAS CELDAS DE LINKS -->
+                <td>
+                  <a *ngIf="paciente.linkConsentimientoDefinitivoCatala" 
+                     [href]="paciente.linkConsentimientoDefinitivoCatala" 
+                     target="_blank">🔗</a>
+                  <span *ngIf="!paciente.linkConsentimientoDefinitivoCatala">-</span>
+                </td>
+                <td>
+                  <a *ngIf="paciente.linkConsentimientoDefinitivoCastellano" 
+                     [href]="paciente.linkConsentimientoDefinitivoCastellano" 
+                     target="_blank">🔗</a>
+                  <span *ngIf="!paciente.linkConsentimientoDefinitivoCastellano">-</span>
+                </td>
+                
                 <td>{{ paciente.estadoValidacion || 'pendiente' }}</td>
                 <td class="actions">
+                  <button class="btn-save" (click)="guardarPaciente(paciente)" 
+                          [class.modified]="paciente.modificado"
+                          title="Guardar cambios">
+                    💾
+                  </button>
                   <button class="btn-edit" (click)="editarPaciente(paciente)">✏️</button>
                   <button class="btn-delete" (click)="eliminarPaciente(paciente.id)">🗑️</button>
                 </td>
               </tr>
 
               <tr *ngIf="pacientesFiltrados.length === 0">
-                <td colspan="15" class="no-results">No se encontraron resultados</td>
+                <td colspan="25" class="no-results">No se encontraron resultados</td>
               </tr>
             </tbody>
           </table>

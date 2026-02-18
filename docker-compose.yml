@@ -1,7 +1,5 @@
-version: "3.8"
-
 services:
-  # ase de datos MySQL
+  # Base de datos MySQL
   db:
     image: mysql:8.0
     container_name: proyecto-db
@@ -36,11 +34,8 @@ services:
       - "8000:8000"
     networks:
       - app-network
-
-    # IMPORTANTE: QUITAMOS EL --reload (causaba los reinicios)
     command: >
       sh -c "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port 8000"
-
     volumes:
       - ./backend:/app
 
@@ -48,7 +43,7 @@ services:
   frontend:
     build:
       context: ./panel-doctor
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: proyecto-frontend
     restart: always
     depends_on:
@@ -57,13 +52,6 @@ services:
       - "8080:4200"
     networks:
       - app-network
-
-    volumes:
-      - ./panel-doctor/src:/app/src
-      - /app/node_modules
-
-    command: >
-      sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --poll=2000"
 
 networks:
   app-network:

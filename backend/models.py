@@ -1,8 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Date, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import database
-
 
 class Consentimiento(database.Base):
     __tablename__ = "consentimientos"
@@ -19,7 +18,7 @@ class Consentimiento(database.Base):
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     activo = Column(Boolean, default=True)
 
-    # 🔹 Nuevos campos opcionales
+    # Campos opcionales existentes
     profesional = Column(String(150), nullable=True)
     email_profesional = Column(String(150), nullable=True)
     instituto = Column(String(150), nullable=True)
@@ -28,6 +27,20 @@ class Consentimiento(database.Base):
     aceptado = Column(Boolean, default=False)
     observaciones = Column(String(255), nullable=True)
     estado = Column(String(100), default="pendiente")
+
+    # ✅ NUEVOS CAMPOS DE VALIDACIÓN   
+    fecha_validacion_ia = Column(Date, nullable=True)
+    fecha_reenvio_profesional = Column(Date, nullable=True)
+    aceptado_por_profesional = Column(String(20), nullable=True)
+    idiomas_disponibles = Column(String(20), nullable=True)
+    fecha_subida_intranet = Column(Date, nullable=True)
+    fecha_disponible_econsentimiento = Column(Date, nullable=True)
+    codigo_econsentimiento = Column(String(100), nullable=True)
+    observaciones_validacion = Column(Text, nullable=True)
+
+    # ✅ NUEVOS CAMPOS DE LINKS
+    link_consentimiento_definitivo_catala = Column(String(500), nullable=True)
+    link_consentimiento_definitivo_castellano = Column(String(500), nullable=True)
 
     versiones = relationship("VersionConsentimiento", back_populates="consentimiento", cascade="all, delete-orphan")
 

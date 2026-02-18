@@ -4,7 +4,7 @@ import schemas
 from datetime import datetime
 
 
-# Crear consentimiento
+# ✅ CREAR
 def crear_consentimiento(db: Session, consentimiento: schemas.ConsentimientoCreate):
     db_consentimiento = models.Consentimiento(
         id_consentimiento=consentimiento.id_consentimiento,
@@ -18,7 +18,7 @@ def crear_consentimiento(db: Session, consentimiento: schemas.ConsentimientoCrea
         fecha_actualizacion=datetime.utcnow(),
         activo=consentimiento.activo,
 
-        # 🔹 Nuevos campos
+        # CAMPOS EXTRA
         profesional=consentimiento.profesional,
         email_profesional=consentimiento.email_profesional,
         instituto=consentimiento.instituto,
@@ -28,43 +28,59 @@ def crear_consentimiento(db: Session, consentimiento: schemas.ConsentimientoCrea
         observaciones=consentimiento.observaciones,
         estado=consentimiento.estado,
     )
+
     db.add(db_consentimiento)
     db.commit()
     db.refresh(db_consentimiento)
     return db_consentimiento
 
 
-# Obtener todos los consentimientos
+# ✅ LISTAR
 def obtener_consentimientos(db: Session):
     return db.query(models.Consentimiento).all()
 
 
-# Obtener consentimiento por ID
+# ✅ OBTENER UNO
 def obtener_consentimiento(db: Session, consentimiento_id: int):
-    return db.query(models.Consentimiento).filter(models.Consentimiento.id == consentimiento_id).first()
+    return db.query(models.Consentimiento).filter(
+        models.Consentimiento.id == consentimiento_id
+    ).first()
 
 
-# Actualizar consentimiento existente
-def actualizar_consentimiento(db: Session, consentimiento_id: int, consentimiento: schemas.ConsentimientoCreate):
+# ✅ UPDATE COMPLETO (FIX PRINCIPAL)
+def actualizar_consentimiento(
+    db: Session,
+    consentimiento_id: int,
+    consentimiento: schemas.ConsentimientoCreate
+):
+
     db_consentimiento = obtener_consentimiento(db, consentimiento_id)
+
     if not db_consentimiento:
         return None
 
-    for campo, valor in consentimiento.dict(exclude_unset=True).items():
+    # 👉 FORZAMOS UPDATE DE TODOS LOS CAMPOS
+    datos = consentimiento.dict()
+
+    for campo, valor in datos.items():
         if hasattr(db_consentimiento, campo):
             setattr(db_consentimiento, campo, valor)
 
     db_consentimiento.fecha_actualizacion = datetime.utcnow()
+
     db.commit()
     db.refresh(db_consentimiento)
+
     return db_consentimiento
 
 
-# Eliminar consentimiento
+# ✅ DELETE
 def eliminar_consentimiento(db: Session, consentimiento_id: int):
     db_consentimiento = obtener_consentimiento(db, consentimiento_id)
+
     if db_consentimiento:
         db.delete(db_consentimiento)
         db.commit()
         return True
+
     return False
