@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+
 // ✅ Modelo actualizado de Consentimiento
 export interface Consentimiento {
   id?: number;
@@ -13,6 +14,10 @@ export interface Consentimiento {
   creado_por?: string;
   actualizado_por?: string;
   activo?: boolean;
+
+  // ✅ NUEVO CAMPO AÑADIDO
+  codigo_consentimiento_interno?: string;
+
   // 🔹 Nuevos campos del backend
   profesional?: string;
   email_profesional?: string;
@@ -29,6 +34,7 @@ export interface Consentimiento {
   pacienteId?: number;
   telefono?: string;
 }
+
 @Injectable({
   providedIn: 'root'
 })

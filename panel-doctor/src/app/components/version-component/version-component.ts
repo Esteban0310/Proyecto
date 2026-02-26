@@ -17,6 +17,9 @@ export class VersionFormComponent implements OnInit {
   consentimientosDisponibles: Consentimiento[] = [];
   miFormulario!: FormGroup;
   cargandoConsentimientos = false;
+  
+  // ✅ NUEVA VARIABLE PARA CÓDIGO INTERNO
+  codigoInternoSeleccionado: string = '';
 
   constructor(
     private router: Router,
@@ -32,6 +35,12 @@ export class VersionFormComponent implements OnInit {
       fecha: new FormControl('', [Validators.required]),
       correo: new FormControl('', [Validators.required, Validators.email]),
       consentimiento: new FormControl(false, [Validators.requiredTrue])
+    });
+
+    // ✅ ESCUCHAR CAMBIOS EN EL SELECT PARA RELLENAR CÓDIGO INTERNO AUTOMÁTICAMENTE
+    this.miFormulario.get('consentimientoId')?.valueChanges.subscribe(id => {
+      const consentimiento = this.consentimientosDisponibles.find(c => c.id === Number(id));
+      this.codigoInternoSeleccionado = consentimiento?.codigo_consentimiento_interno || '-';
     });
 
     // ✅ Cargar lista de consentimientos
@@ -70,7 +79,7 @@ export class VersionFormComponent implements OnInit {
 
     // ✅ Crear el payload EXACTO que espera el backend
     const payload = {
-      consentimiento_id: Number(formValue.consentimientoId), // 👈 clave correcta
+      consentimiento_id: Number(formValue.consentimientoId),
       numero_version: formValue.numeroVersion,
       fecha: formValue.fecha,
       archivo: null,
@@ -82,6 +91,7 @@ export class VersionFormComponent implements OnInit {
       next: () => {
         alert('✅ Versión guardada correctamente');
         this.miFormulario.reset();
+        this.codigoInternoSeleccionado = ''; // ✅ Limpiar código interno
       },
       error: (err) => {
         console.error('❌ Error al guardar versión:', err);
@@ -94,6 +104,7 @@ export class VersionFormComponent implements OnInit {
   eliminar() {
     if (confirm('¿Deseas eliminar los datos del formulario?')) {
       this.miFormulario.reset();
+      this.codigoInternoSeleccionado = ''; // ✅ Limpiar código interno
     }
   }
 

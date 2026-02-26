@@ -40,13 +40,24 @@
                   [class.input-error]="miFormulario.get('consentimientoId')?.invalid && miFormulario.get('consentimientoId')?.touched">
             <option value="">Seleccionar consentimiento</option>
             <option *ngFor="let c of consentimientosDisponibles" [value]="c.id">
-              Consentimiento #{{ c.id }} - Paciente {{ c.pacienteId }}
+              Consentimiento #{{ c.id }} - {{ c.id_consentimiento }}
             </option>
           </select>
           <span class="error-msg"
                 *ngIf="miFormulario.get('consentimientoId')?.invalid && miFormulario.get('consentimientoId')?.touched">
             Debes seleccionar un consentimiento
           </span>
+        </div>
+
+        <!-- ✅ NUEVO CAMPO: Código Interno (solo lectura, se rellena automático) -->
+        <div class="form-group">
+          <label>Código Interno</label>
+          <input 
+            type="text" 
+            [value]="codigoInternoSeleccionado" 
+            readonly 
+            class="input-readonly"
+            placeholder="Se rellena automáticamente al seleccionar consentimiento">
         </div>
 
         <!-- Número de versión -->

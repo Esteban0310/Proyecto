@@ -51,7 +51,9 @@ export interface PacienteFormulario {
   fechaCreacion?: Date;
   fechaActualizacion?: Date;
   activo?: boolean;
-  estadoValidacion?: 'pendiente' | 'validado';
+  
+  // ✅ AÑADIDO 'caducado'
+  estadoValidacion?: 'pendiente' | 'validado' | 'caducado';
 }
 
 @Injectable({

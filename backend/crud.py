@@ -14,7 +14,7 @@ def crear_consentimiento(db: Session, consentimiento: schemas.ConsentimientoCrea
         version=consentimiento.version,
         creado_por=consentimiento.creado_por,
         actualizado_por=consentimiento.actualizado_por,
-        fecha_creacion=datetime.utcnow(),
+        fecha_creacion=datetime.utcnow(),   
         fecha_actualizacion=datetime.utcnow(),
         activo=consentimiento.activo,
 

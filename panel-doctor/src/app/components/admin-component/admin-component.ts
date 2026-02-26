@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import { PacientesService, PacienteFormulario } from '../../services/pacientes';
 
 interface Paciente extends PacienteFormulario {
-  estadoValidacion?: 'pendiente' | 'validado';
+  estadoValidacion?: 'pendiente' | 'validado' | 'caducado';
   version: string;
   nombreArchivoCatalan?: string;
   nombreArchivoCastellano?: string;
@@ -34,6 +34,11 @@ export class AdminComponent implements OnInit {
   menuUsuario = false;
   filtrosAbiertos = false;
   busqueda = '';
+
+  modalEditarAbierto = false;
+  pacienteEditar: Paciente | null = null;
+
+  viendoCaducados = false;
 
   pacientes: Paciente[] = [];
   pacientesFiltrados: Paciente[] = [];
@@ -63,10 +68,11 @@ export class AdminComponent implements OnInit {
         this.pacientes = data.map((p: PacienteFormulario) => ({
           ...p,
           version: p.version || 'V.1',
-          estadoValidacion: 'pendiente'
+          estadoValidacion: p.estadoValidacion || 'pendiente'
         })) as Paciente[];
 
-        this.pacientesFiltrados = [...this.pacientes];
+        this.pacientesFiltrados = this.pacientes.filter(p => p.estadoValidacion !== 'caducado');
+        this.viendoCaducados = false;
       },
       error: (err) => console.error('❌ Error al cargar pacientes', err)
     });
@@ -100,6 +106,9 @@ export class AdminComponent implements OnInit {
 
   aplicarFiltros() {
     this.pacientesFiltrados = this.pacientes.filter(p => {
+      if (this.viendoCaducados && p.estadoValidacion !== 'caducado') return false;
+      if (!this.viendoCaducados && p.estadoValidacion === 'caducado') return false;
+
       const coincideBusqueda =
         !this.busqueda ||
         Object.values(p).some(v =>
@@ -123,127 +132,61 @@ export class AdminComponent implements OnInit {
   limpiarFiltros() {
     this.filtros = { id: '', version: '', email: '', idConsentimiento: '', estadoValidacion: '' };
     this.busqueda = '';
-    this.pacientesFiltrados = [...this.pacientes];
+    this.aplicarFiltros();
   }
 
-  Database() { this.router.navigate(['/admin']); }
+  verCaducados() {
+    this.viendoCaducados = true;
+    this.menuAbierto = false;
+    this.limpiarFiltros();
+    this.pacientesFiltrados = this.pacientes.filter(p => p.estadoValidacion === 'caducado');
+  }
+
+  Database() { 
+    this.viendoCaducados = false;
+    this.menuAbierto = false;
+    this.limpiarFiltros();
+    this.pacientesFiltrados = this.pacientes.filter(p => p.estadoValidacion !== 'caducado');
+  }
+
   Formulario() { this.router.navigate(['/formulario']); }
   Version() { this.router.navigate(['/version']); }
   cerrarSesion() { this.router.navigate(['/login']); }
 
-  // ✅ EDITAR TODOS LOS CAMPOS (ANTIGUOS + NUEVOS)
   editarPaciente(paciente: Paciente) {
-    // CAMPOS ANTIGUOS
-    const codigoInterno = prompt('Código interno:', paciente.codigoConsentimientoInterno ?? '');
-    if (codigoInterno === null) return;
+    this.pacienteEditar = { ...paciente };
+    this.modalEditarAbierto = true;
+    this.menuAbierto = false;
+  }
 
-    const nombreConsentimiento = prompt('Consentimiento:', paciente.nombreConsentimiento ?? '');
-    if (nombreConsentimiento === null) return;
+  cerrarModalEditar() {
+    this.modalEditarAbierto = false;
+    this.pacienteEditar = null;
+  }
 
-    const nombreProfesional = prompt('Profesional:', paciente.nombreProfesional ?? '');
-    if (nombreProfesional === null) return;
-
-    const emailProfesional = prompt('Email profesional:', paciente.emailProfesional ?? '');
-    if (emailProfesional === null) return;
-
-    const instituto = prompt('Instituto:', paciente.instituto ?? '');
-    if (instituto === null) return;
-
-    const codigoServicio = prompt('Servicio:', paciente.codigoServicio ?? '');
-    if (codigoServicio === null) return;
-
-    const lateralidad = prompt('Lateralidad:', paciente.lateralidad ?? '');
-    if (lateralidad === null) return;
-
-    const observaciones = prompt('Observaciones:', paciente.observaciones ?? '');
-    if (observaciones === null) return;
-
-    const aceptadoTxt = prompt(
-      '¿Aceptado? (si / no)',
-      paciente.aceptadoPorProfesional ? 'si' : 'no'
-    );
-    if (aceptadoTxt === null) return;
-
-    // ✅ NUEVOS CAMPOS DE VALIDACIÓN
-    const fechaValidacionIA = prompt('Fecha Validación IA (YYYY-MM-DD):', paciente.fechaValidacionIA ?? '');
-    if (fechaValidacionIA === null) return;
-
-    const fechaReenvioProfesional = prompt('Fecha Reenvío Profesional (YYYY-MM-DD):', paciente.fechaReenvioProfesional ?? '');
-    if (fechaReenvioProfesional === null) return;
-
-    const aceptadoPorProfesional = prompt(
-      'Aceptado por Profesional (si / no_contesta / no):', 
-      typeof paciente.aceptadoPorProfesional === 'string' ? paciente.aceptadoPorProfesional : (paciente.aceptadoPorProfesional ? 'si' : 'no')
-    );
-    if (aceptadoPorProfesional === null) return;
-
-    const idiomasDisponibles = prompt(
-      'Idiomas Disponibles (catala / espanyol / ambos):', 
-      paciente.idiomasDisponibles ?? ''
-    );
-    if (idiomasDisponibles === null) return;
-
-    const fechaSubidaIntranet = prompt('Fecha Subida Intranet (YYYY-MM-DD):', paciente.fechaSubidaIntranet ?? '');
-    if (fechaSubidaIntranet === null) return;
-
-    const fechaDisponibleEConsentimiento = prompt('Fecha Disponible eConsentimiento (YYYY-MM-DD):', paciente.fechaDisponibleEConsentimiento ?? '');
-    if (fechaDisponibleEConsentimiento === null) return;
-
-    const codigoEConsentimiento = prompt('Código eConsentimiento:', paciente.codigoEConsentimiento ?? '');
-    if (codigoEConsentimiento === null) return;
-
-    const observacionesValidacion = prompt('Observaciones Validación:', paciente.observacionesValidacion ?? '');
-    if (observacionesValidacion === null) return;
-
-    // ✅ NUEVOS CAMPOS DE LINKS
-    const linkConsentimientoDefinitivoCatala = prompt('Link Consentimiento Definitivo Català:', paciente.linkConsentimientoDefinitivoCatala ?? '');
-    if (linkConsentimientoDefinitivoCatala === null) return;
-
-    const linkConsentimientoDefinitivoCastellano = prompt('Link Consentimiento Definitivo Castellano:', paciente.linkConsentimientoDefinitivoCastellano ?? '');
-    if (linkConsentimientoDefinitivoCastellano === null) return;
-
-    const actualizado: Paciente = {
-      ...paciente,
-      // CAMPOS ANTIGUOS
-      codigoConsentimientoInterno: codigoInterno,
-      nombreConsentimiento,
-      nombreProfesional,
-      emailProfesional,
-      instituto,
-      codigoServicio,
-      lateralidad,
-      observaciones,
-      aceptadoPorProfesional: aceptadoTxt.toLowerCase() === 'si',
-      
-      // ✅ NUEVOS CAMPOS DE VALIDACIÓN
-      fechaValidacionIA: fechaValidacionIA || undefined,
-      fechaReenvioProfesional: fechaReenvioProfesional || undefined,
-      idiomasDisponibles: idiomasDisponibles || undefined,
-      fechaSubidaIntranet: fechaSubidaIntranet || undefined,
-      fechaDisponibleEConsentimiento: fechaDisponibleEConsentimiento || undefined,
-      codigoEConsentimiento: codigoEConsentimiento || undefined,
-      observacionesValidacion: observacionesValidacion || undefined,
-      
-      // ✅ NUEVOS CAMPOS DE LINKS
-      linkConsentimientoDefinitivoCatala: linkConsentimientoDefinitivoCatala || undefined,
-      linkConsentimientoDefinitivoCastellano: linkConsentimientoDefinitivoCastellano || undefined,
-      
-      actualizadoPor: this.usuario.nombre,
-      fechaActualizacion: new Date(),
-      modificado: true
-    };
-
-    // Asignar el valor de aceptadoPorProfesional correctamente
-    if (aceptadoPorProfesional) {
-      actualizado.aceptadoPorProfesional = aceptadoPorProfesional as 'si' | 'no_contesta' | 'no';
+  guardarDesdeModal() {
+    if (!this.pacienteEditar || !this.pacienteEditar.id) {
+      alert('❌ Error: no se puede guardar');
+      return;
     }
 
-    if (!actualizado.id) return;
-    const i = this.pacientes.findIndex(p => p.id === actualizado.id);
-    if (i !== -1) {
-      this.pacientes[i] = actualizado;
-      this.pacientesFiltrados = [...this.pacientes];
-    }
+    this.pacientesService.actualizarPaciente(this.pacienteEditar.id, this.pacienteEditar).subscribe({
+      next: () => {
+        alert('✅ Cambios guardados correctamente');
+        
+        const i = this.pacientes.findIndex(p => p.id === this.pacienteEditar!.id);
+        if (i !== -1) {
+          this.pacientes[i] = { ...this.pacienteEditar! };
+        }
+        
+        this.cerrarModalEditar();
+        this.aplicarFiltros();
+      },
+      error: (err) => {
+        console.error('❌ Error al guardar', err);
+        alert('❌ Error al guardar los cambios');
+      }
+    });
   }
 
   eliminarPaciente(id?: number) {
