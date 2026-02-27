@@ -18,7 +18,6 @@ class Consentimiento(database.Base):
     fecha_actualizacion = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     activo = Column(Boolean, default=True)
 
-    # Campos opcionales existentes
     profesional = Column(String(150), nullable=True)
     email_profesional = Column(String(150), nullable=True)
     instituto = Column(String(150), nullable=True)
@@ -28,7 +27,6 @@ class Consentimiento(database.Base):
     observaciones = Column(String(255), nullable=True)
     estado = Column(String(100), default="pendiente")
 
-    # ✅ NUEVOS CAMPOS DE VALIDACIÓN   
     fecha_validacion_ia = Column(Date, nullable=True)
     fecha_reenvio_profesional = Column(Date, nullable=True)
     aceptado_por_profesional = Column(String(20), nullable=True)
@@ -38,9 +36,15 @@ class Consentimiento(database.Base):
     codigo_econsentimiento = Column(String(100), nullable=True)
     observaciones_validacion = Column(Text, nullable=True)
 
-    # ✅ NUEVOS CAMPOS DE LINKS
     link_consentimiento_definitivo_catala = Column(String(500), nullable=True)
     link_consentimiento_definitivo_castellano = Column(String(500), nullable=True)
+
+    nombre_archivo_catalan = Column(String(255), nullable=True)
+    nombre_archivo_castellano = Column(String(255), nullable=True)
+
+    # ✅ NUEVOS
+    codigo_interno = Column(String(100), nullable=True)
+    nombre_consentimiento = Column(String(255), nullable=True)
 
     versiones = relationship("VersionConsentimiento", back_populates="consentimiento", cascade="all, delete-orphan")
 

@@ -142,7 +142,7 @@ export class AdminComponent implements OnInit {
     this.pacientesFiltrados = this.pacientes.filter(p => p.estadoValidacion === 'caducado');
   }
 
-  Database() { 
+  Database() {
     this.viendoCaducados = false;
     this.menuAbierto = false;
     this.limpiarFiltros();
@@ -173,12 +173,12 @@ export class AdminComponent implements OnInit {
     this.pacientesService.actualizarPaciente(this.pacienteEditar.id, this.pacienteEditar).subscribe({
       next: () => {
         alert('✅ Cambios guardados correctamente');
-        
+
         const i = this.pacientes.findIndex(p => p.id === this.pacienteEditar!.id);
         if (i !== -1) {
           this.pacientes[i] = { ...this.pacienteEditar! };
         }
-        
+
         this.cerrarModalEditar();
         this.aplicarFiltros();
       },
@@ -200,10 +200,37 @@ export class AdminComponent implements OnInit {
   }
 
   exportToExcel() {
-    const ws = XLSX.utils.json_to_sheet(this.pacientesFiltrados);
+    const datos = this.pacientesFiltrados.map(p => ({
+      'ID': p.id,
+      'Código Interno': p.codigoConsentimientoInterno || '-',
+      'Archivo Catalán': p.nombreArchivoCatalan || '-',
+      'Archivo Castellano': p.nombreArchivoCastellano || '-',
+      'Versión': p.version || '-',
+      'Consentimiento': p.nombreConsentimiento || '-',
+      'Profesional': p.nombreProfesional || '-',
+      'Email Profesional': p.emailProfesional || '-',
+      'Instituto': p.instituto || '-',
+      'Servicio': p.codigoServicio || '-',
+      'Lateralidad': p.lateralidad || '-',
+      'Aceptado': p.aceptadoPorProfesional || '-',
+      'Observaciones': p.observaciones || '-',
+      'Fecha Val. IA': p.fechaValidacionIA || '-',
+      'Fecha Reenvío Prof.': p.fechaReenvioProfesional || '-',
+      'Aceptado Prof.': p.aceptadoPorProfesional || '-',
+      'Idiomas Disp.': p.idiomasDisponibles || '-',
+      'Fecha Subida Intranet': p.fechaSubidaIntranet || '-',
+      'Fecha Disp. eConsent.': p.fechaDisponibleEConsentimiento || '-',
+      'Código eConsent.': p.codigoEConsentimiento || '-',
+      'Observ. Validación': p.observacionesValidacion || '-',
+      'Link CA': p.linkConsentimientoDefinitivoCatala || '-',
+      'Link ES': p.linkConsentimientoDefinitivoCastellano || '-',
+      'Estado': p.estadoValidacion || 'pendiente'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(datos);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pacientes');
-    XLSX.writeFile(wb, 'pacientes.xlsx');
+    XLSX.utils.book_append_sheet(wb, ws, 'Consentimientos');
+    XLSX.writeFile(wb, 'consentimientos.xlsx');
   }
 
   importFromExcel(event: any) {
@@ -226,8 +253,6 @@ export class AdminComponent implements OnInit {
     paciente.archivoCatalan = file;
     paciente.nombreArchivoCatalan = file.name;
     paciente.modificado = true;
-
-    console.log('Archivo Catalán seleccionado:', file.name, '- Presiona GUARDAR para subir');
   }
 
   subirArchivoCastellano(event: any, paciente: Paciente) {
@@ -237,8 +262,6 @@ export class AdminComponent implements OnInit {
     paciente.archivoCastellano = file;
     paciente.nombreArchivoCastellano = file.name;
     paciente.modificado = true;
-
-    console.log('Archivo Castellano seleccionado:', file.name, '- Presiona GUARDAR para subir');
   }
 
   guardarPaciente(paciente: Paciente) {
@@ -251,7 +274,7 @@ export class AdminComponent implements OnInit {
       next: () => {
         alert('✅ Cambios guardados correctamente');
         paciente.modificado = false;
-        
+
         const i = this.pacientes.findIndex(p => p.id === paciente.id);
         if (i !== -1) {
           this.pacientes[i] = { ...paciente };
